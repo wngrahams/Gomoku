@@ -1,4 +1,4 @@
-package user;
+package client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -13,7 +13,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 @SuppressWarnings("serial")
-public class UserGUI extends JFrame {
+public class GomokuGUI extends JFrame {
 	
 	private JButton sendButton;
 	private JPanel chatPanel;
@@ -22,10 +22,10 @@ public class UserGUI extends JFrame {
 	private JTextField textEntry;
 
 	public static void main(String args[]) {
-		UserGUI ug = new UserGUI();
+		GomokuGUI gg = new GomokuGUI();
 	}
 	
-	public UserGUI() {
+	public GomokuGUI() {
 		super();
 		initializePanels();
 		this.setBackground(Color.BLACK);
@@ -71,6 +71,4 @@ public class UserGUI extends JFrame {
 	    initializeChatPanel();
 	    initializeGamePanel();
 	}
-
-	
 }
