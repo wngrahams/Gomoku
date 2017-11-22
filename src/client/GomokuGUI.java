@@ -17,7 +17,7 @@ public class GomokuGUI extends JFrame {
 	
 	private JButton sendButton;
 	private JPanel chatPanel;
-	private JPanel gamePanel;
+	private GameBoardPanel gamePanel;
 	private JTextArea chatDisplay;
 	private JTextField textEntry;
 
@@ -54,10 +54,9 @@ public class GomokuGUI extends JFrame {
 	}
 	
 	private void initializeGamePanel() {
-		gamePanel = new JPanel(new GridLayout(15, 15, 3, 3));
-//		gamePanel.setBackground(Color.LIGHT_GRAY);
+		gamePanel = new GameBoardPanel();
 		
-//		add(gamePanel, BorderLayout.CENTER);
+		add(gamePanel, BorderLayout.CENTER);
 	}
 
 	private void initializePanels() {
