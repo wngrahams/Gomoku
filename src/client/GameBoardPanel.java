@@ -14,10 +14,19 @@ public class GameBoardPanel extends JPanel implements MouseListener{
 	private static final int WHITE = 0b01;
 	private static final int BLACK = 0b10;
 	
+	private boolean humanUser;
+	private int userColor;
+	
 	private int[][] gameState = new int[15][15];
+	
+	public GameBoardPanel(int color) {
+		this(true, color);
+	}
 
-	public GameBoardPanel() {
+	public GameBoardPanel(boolean human, int color) {
 		setDoubleBuffered(true);
+		humanUser = human;
+		userColor = color;
 		
 		initializePanel();
 		resetBoard();
@@ -26,7 +35,8 @@ public class GameBoardPanel extends JPanel implements MouseListener{
 	private void initializePanel() {
 		setBackground(Color.WHITE);
 		
-		addMouseListener(this);
+		if (humanUser)
+			addMouseListener(this);
 	}
 	
 	public void resetBoard() {
@@ -39,8 +49,32 @@ public class GameBoardPanel extends JPanel implements MouseListener{
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
+		int x = e.getX();
+		int y = e.getY();
+		int h = getHeight();
+		int w = getWidth();
 		
+		double cubeWidth = w/(16.0);
+		double cubeHeight = h/(16.0);
+		
+		double xGrid = (x/(cubeWidth + 0.0) - 0.5);
+		double yGrid = (y/(cubeHeight + 0.0) - 0.5);
+		int roundedX;
+		int roundedY;
+		
+		if (xGrid >=0)
+			roundedX = (int)xGrid;
+		else
+			roundedX = -1;
+		if (yGrid >=0)
+			roundedY = (int)yGrid;
+		else
+			roundedY = -1;
+		
+		if (xGrid >= 0 && xGrid < 15 && yGrid >=0 && yGrid < 15)
+			gameState[roundedX][roundedY] = userColor;
+		
+		repaint();
 	}
 
 	@Override
@@ -64,11 +98,14 @@ public class GameBoardPanel extends JPanel implements MouseListener{
 		int h = getHeight();
 		g.fillRect( 0, 0, w, h ); 
 		
+		double cubeWidth = w/(16.0);
+		double cubeHeight = h/(16.0);
+		
 		// draw lines
 		g.setColor(Color.BLACK);
 		for (int i=1; i<16; i++) {
-			g.drawLine((int)(w/16.0)*i, 0, (int)(w/16.0)*i, h);
-			g.drawLine(0, (int)(h/16.0)*i, w, (int)(h/16.0)*i);
+			g.drawLine((int)(cubeWidth*i), 0, (int)(cubeWidth*i), h);
+			g.drawLine(0, (int)(cubeHeight*i), w, (int)(cubeHeight*i));
 		}
 		
 		// draw pieces played
@@ -81,8 +118,8 @@ public class GameBoardPanel extends JPanel implements MouseListener{
 					else if (gameState[i][j] == BLACK)
 						g.setColor(Color.BLACK);
 					
-					int diameter = Math.min((int)(w/16.0), (int)(h/16.0));
-					g.fillOval((int)(w/16.0)*(i+1) - diameter/2, (int)(h/16.0)*(j+1) - diameter/2, diameter, diameter);
+					double diameter = Math.min(cubeWidth, cubeHeight);
+					g.fillOval((int)(cubeWidth*(i+1) - diameter/2.0), (int)(cubeHeight*(j+1) - diameter/2.0), (int)diameter, (int)diameter);
 				}
 			}
 		}

@@ -20,6 +20,9 @@ public class GomokuGUI extends JFrame {
 	private GameBoardPanel gamePanel;
 	private JTextArea chatDisplay;
 	private JTextField textEntry;
+	
+	private static final int BLACK = 0b10;
+	private static final int WHITE = 0b01;
 
 	public static void main(String args[]) {
 		GomokuGUI gg = new GomokuGUI();
@@ -54,7 +57,7 @@ public class GomokuGUI extends JFrame {
 	}
 	
 	private void initializeGamePanel() {
-		gamePanel = new GameBoardPanel();
+		gamePanel = new GameBoardPanel(BLACK);
 		
 		add(gamePanel, BorderLayout.CENTER);
 	}
