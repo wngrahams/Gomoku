@@ -3,8 +3,6 @@ package client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridLayout;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -41,6 +39,7 @@ public class GomokuGUI extends JFrame {
 	
 	public void makeMove(int x, int y) {
 		GomokuMove move = new GomokuMove(x, y, userColor);
+		// send move to client
 	}
 	
 	private void initializeChatPanel() {
