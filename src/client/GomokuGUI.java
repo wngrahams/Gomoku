@@ -12,6 +12,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import gomoku.Gomoku;
+import gomoku.GomokuMove;
+
 @SuppressWarnings("serial")
 public class GomokuGUI extends JFrame {
 	
@@ -21,19 +24,23 @@ public class GomokuGUI extends JFrame {
 	private JTextArea chatDisplay;
 	private JTextField textEntry;
 	
-	private static final int BLACK = 0b10;
-	private static final int WHITE = 0b01;
+	private int userColor;
 
 	public static void main(String args[]) {
-		GomokuGUI gg = new GomokuGUI();
+		GomokuGUI gg = new GomokuGUI(Gomoku.BLACK);
 	}
 	
-	public GomokuGUI() {
+	public GomokuGUI(int color) {
 		super();
+		userColor = color;
 		initializePanels();
 		this.setBackground(Color.BLACK);
 		
 		setVisible(true);
+	}
+	
+	public void makeMove(int x, int y) {
+		GomokuMove move = new GomokuMove(x, y, userColor);
 	}
 	
 	private void initializeChatPanel() {
@@ -57,7 +64,7 @@ public class GomokuGUI extends JFrame {
 	}
 	
 	private void initializeGamePanel() {
-		gamePanel = new GameBoardPanel(BLACK);
+		gamePanel = new GameBoardPanel(this);
 		
 		add(gamePanel, BorderLayout.CENTER);
 	}
@@ -72,5 +79,9 @@ public class GomokuGUI extends JFrame {
 		
 	    initializeChatPanel();
 	    initializeGamePanel();
+	}
+	
+	public void placePieceOnBoard(int x, int y) {
+		gamePanel.drawPiece(new GomokuMove(x, y, userColor));
 	}
 }

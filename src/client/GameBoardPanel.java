@@ -5,31 +5,36 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import gomoku.Gomoku;
+import gomoku.GomokuMove;
 
 @SuppressWarnings("serial")
 public class GameBoardPanel extends JPanel implements MouseListener{
 	
-	private static final int EMPTY = 0b00;
-	private static final int WHITE = 0b01;
-	private static final int BLACK = 0b10;
-	
 	private boolean humanUser;
-	private int userColor;
+	private GomokuGUI connectedFrame;
+//	private int userColor;
 	
 	private int[][] gameState = new int[15][15];
 	
-	public GameBoardPanel(int color) {
-		this(true, color);
+	public GameBoardPanel(GomokuGUI g) {
+		this(g, true);
 	}
 
-	public GameBoardPanel(boolean human, int color) {
+	public GameBoardPanel(GomokuGUI g, boolean human) {
 		setDoubleBuffered(true);
 		humanUser = human;
-		userColor = color;
+		connectedFrame = g;
 		
 		initializePanel();
 		resetBoard();
+	}
+	
+	public void drawPiece(GomokuMove move) {
+		gameState[move.getX()][move.getY()] = move.getColor();
 	}
 	
 	private void initializePanel() {
@@ -42,7 +47,7 @@ public class GameBoardPanel extends JPanel implements MouseListener{
 	public void resetBoard() {
 		for (int i=0; i<15; i++) {
 			for (int j=0; j<15; j++) {
-				gameState[i][j] = EMPTY;
+				gameState[i][j] = Gomoku.EMPTY;
 			}
 		}
 	}
@@ -72,7 +77,7 @@ public class GameBoardPanel extends JPanel implements MouseListener{
 			roundedY = -1;
 		
 		if (xGrid >= 0 && xGrid < 15 && yGrid >=0 && yGrid < 15)
-			gameState[roundedX][roundedY] = userColor;
+			connectedFrame.makeMove(roundedX, roundedY);
 		
 		repaint();
 	}
@@ -112,10 +117,10 @@ public class GameBoardPanel extends JPanel implements MouseListener{
 		// TODO: make this more efficient by just checking for updates, not searching whole board every time
 		for (int i=0; i<15; i++) {
 			for (int j=0; j<15; j++) {
-				if (gameState[i][j] != EMPTY) {
-					if (gameState[i][j] == WHITE)
+				if (gameState[i][j] != Gomoku.EMPTY) {
+					if (gameState[i][j] == Gomoku.WHITE)
 						g.setColor(Color.WHITE);
-					else if (gameState[i][j] == BLACK)
+					else if (gameState[i][j] == Gomoku.BLACK)
 						g.setColor(Color.BLACK);
 					
 					double diameter = Math.min(cubeWidth, cubeHeight);
