@@ -1,10 +1,8 @@
-package user;
+package client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridLayout;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -12,25 +10,36 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import gomoku.Gomoku;
+import gomoku.GomokuMove;
+
 @SuppressWarnings("serial")
-public class UserGUI extends JFrame {
+public class GomokuGUI extends JFrame {
 	
 	private JButton sendButton;
 	private JPanel chatPanel;
-	private JPanel gamePanel;
+	private GameBoardPanel gamePanel;
 	private JTextArea chatDisplay;
 	private JTextField textEntry;
+	
+	private int userColor;
 
 	public static void main(String args[]) {
-		UserGUI ug = new UserGUI();
+		GomokuGUI gg = new GomokuGUI(Gomoku.BLACK);
 	}
 	
-	public UserGUI() {
+	public GomokuGUI(int color) {
 		super();
+		userColor = color;
 		initializePanels();
 		this.setBackground(Color.BLACK);
 		
 		setVisible(true);
+	}
+	
+	public void makeMove(int x, int y) {
+		GomokuMove move = new GomokuMove(x, y, userColor);
+		// send move to client
 	}
 	
 	private void initializeChatPanel() {
@@ -54,10 +63,9 @@ public class UserGUI extends JFrame {
 	}
 	
 	private void initializeGamePanel() {
-		gamePanel = new JPanel(new GridLayout(15, 15, 3, 3));
-//		gamePanel.setBackground(Color.LIGHT_GRAY);
+		gamePanel = new GameBoardPanel(this);
 		
-//		add(gamePanel, BorderLayout.CENTER);
+		add(gamePanel, BorderLayout.CENTER);
 	}
 
 	private void initializePanels() {
@@ -71,6 +79,8 @@ public class UserGUI extends JFrame {
 	    initializeChatPanel();
 	    initializeGamePanel();
 	}
-
 	
+	public void placePieceOnBoard(int x, int y) {
+		gamePanel.drawPiece(new GomokuMove(x, y, userColor));
+	}
 }
