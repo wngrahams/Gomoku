@@ -58,6 +58,9 @@ public class GomokuClient extends GomokuProtocol {
 		serverIP = ip;
 		serverPort = port;
 		
+		int rand = (int) (Math.random() * 100000 + 1);
+		user = "user" + Integer.toString(rand);
+		
 		gui = new GomokuGUI(this);
 		
 		if(!connectToServer())
@@ -120,15 +123,33 @@ public class GomokuClient extends GomokuProtocol {
 	
 	public void sendChatMessage(String message) {
 		String chatMessage = generateChatMessage(user, message);
-		Thread messageThread = new Thread(new MessageSender(chatMessage));
+		sendMessage(chatMessage);
+	}
+	
+	public void sendChangeNameMessage(String newName) {
+		String changeNameMessage = generateChangeNameMessage(user, newName);
+		sendMessage(changeNameMessage);
+	}
+	
+	private void sendMessage(String message) {
+		Thread messageThread = new Thread(new MessageSender(message));
 		messageThread.start();
+	}
+	
+	public void sendGiveupMessage() {
+		String giveupMessage = generateGiveupMessage();
+		sendMessage(giveupMessage);
 	}
 	
 	public void sendPlayMessage(GomokuMove move) {
 		boolean black = (move.getColor() == Gomoku.BLACK ? true : false);
 		String playMessage = generatePlayMessage(black, move.getX(), move.getY());
-		Thread messageThread = new Thread(new MessageSender(playMessage));
-		messageThread.start();
+		sendMessage(playMessage);
+	}
+	
+	public void sendResetMessage() {
+		String resetMessage = generateResetMessage();
+		sendMessage(resetMessage);
 	}
 	
 	private class MessageSender implements Runnable {

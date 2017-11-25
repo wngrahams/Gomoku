@@ -3,11 +3,13 @@ package client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -15,17 +17,22 @@ import javax.swing.JTextField;
 
 import gomoku.Gomoku;
 import gomoku.GomokuMove;
+import javafx.scene.layout.Border;
 
 @SuppressWarnings("serial")
 public class GomokuGUI extends JFrame implements ActionListener {
 	
 	private GomokuClient connectedClient;
 	
+	private GameBoardPanel gamePanel;
+	private JButton giveUpButton;
+	private JButton resetButton;
 	private JButton sendButton;
 	private JPanel chatPanel;
-	private GameBoardPanel gamePanel;
+	private JPanel optionsPanel;
 	private JTextArea chatDisplay;
 	private JTextField textEntry;
+	private JTextField nameChangeField;
 	
 	private int userColor;
 	
@@ -44,13 +51,6 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	public void displayMessage(String message) {
 		chatDisplay.append(message + "\n");
 		chatDisplay.setCaretPosition(chatDisplay.getDocument().getLength());
-	}
-	
-	public void makeMove(int x, int y) {
-		if (userColor != Gomoku.EMPTY) {
-			GomokuMove move = new GomokuMove(x, y, userColor);
-			connectedClient.sendPlayMessage(move);
-		}
 	}
 	
 	private void initializeChatPanel() {
@@ -80,6 +80,32 @@ public class GomokuGUI extends JFrame implements ActionListener {
 		
 		add(gamePanel, BorderLayout.CENTER);
 	}
+	
+	private void initializeOptionsPanel() {
+		optionsPanel = new JPanel(new BorderLayout());
+		JPanel left = new JPanel(new BorderLayout());
+		JPanel right = new JPanel(new FlowLayout());
+		
+		JLabel changeNameLabel = new JLabel("Change name:");
+		left.add(changeNameLabel, BorderLayout.CENTER);
+		
+		nameChangeField = new JTextField(20);
+		nameChangeField.addActionListener(this);
+		left.add(nameChangeField, BorderLayout.EAST);
+		
+		giveUpButton = new JButton("Give Up");
+		giveUpButton.addActionListener(this);
+		right.add(giveUpButton);
+		
+		resetButton = new JButton("Reset");
+		resetButton.addActionListener(this);
+		right.add(resetButton);
+		
+		optionsPanel.add(left, BorderLayout.WEST);
+		optionsPanel.add(right, BorderLayout.CENTER);
+		
+		add(optionsPanel, BorderLayout.SOUTH);
+	}
 
 	private void initializePanels() {
 		setTitle("Gomoku");
@@ -91,6 +117,14 @@ public class GomokuGUI extends JFrame implements ActionListener {
 		
 	    initializeChatPanel();
 	    initializeGamePanel();
+	    initializeOptionsPanel();
+	}
+
+	public void makeMove(int x, int y) {
+		if (userColor != Gomoku.EMPTY) {
+			GomokuMove move = new GomokuMove(x, y, userColor);
+			connectedClient.sendPlayMessage(move);
+		}
 	}
 	
 	public void placePieceOnBoard(GomokuMove move) {
@@ -109,6 +143,19 @@ public class GomokuGUI extends JFrame implements ActionListener {
 				connectedClient.sendChatMessage(text);
 				textEntry.setText(null);
 			}
+		}
+		else if (e.getSource() == nameChangeField) {
+			String newName = textEntry.getText();
+			if (newName != null && !newName.isEmpty()) {				
+				connectedClient.sendChangeNameMessage(newName);
+				textEntry.setText(null);
+			}
+		}
+		else if (e.getSource() == resetButton) {
+			connectedClient.sendResetMessage();
+		}
+		else if (e.getSource() == giveUpButton) {
+			connectedClient.sendGiveupMessage();
 		}
 	}
 }
