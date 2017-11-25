@@ -32,13 +32,13 @@ public class GomokuClient extends GomokuProtocol {
 		if (args.length < 1)
 			cc = new GomokuClient();
 		else if (args.length < 2 || args.length > 2)
-			System.out.println("Usage: java ChatterClient <hostname> <port_number>");
+			System.out.println("Usage: java GomokuClient <hostname> <port_number>");
 		else {
 			try {
 				int portInt = Integer.parseInt(args[1]);
 				cc = new GomokuClient(args[0], portInt);
 			} catch (NumberFormatException e) {
-				System.out.println("Usage: java ChatterClient <hostname> <port_number>");
+				System.out.println("Usage: java GomokuClient <hostname> <port_number>");
 				System.out.println("Port number should be an integer less than " + 0xFFFF);
 			}
 		}
