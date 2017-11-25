@@ -26,6 +26,8 @@ public class GomokuClient extends GomokuProtocol {
     private BufferedReader bFrom;
     private OutputStream toServer;
     private BufferedWriter bTo;
+    
+    private String user;
 	
 	public static void main(String[] args) {
 		GomokuClient cc;
@@ -56,7 +58,7 @@ public class GomokuClient extends GomokuProtocol {
 		serverIP = ip;
 		serverPort = port;
 		
-		gui = new GomokuGUI(Gomoku.EMPTY);
+		gui = new GomokuGUI(this);
 		
 		if(!connectToServer())
 			disconnectFromServer();
@@ -116,6 +118,40 @@ public class GomokuClient extends GomokuProtocol {
 		
 	}
 	
+	public void sendChatMessage(String message) {
+		String chatMessage = generateChatMessage(user, message);
+		Thread messageThread = new Thread(new MessageSender(chatMessage));
+		messageThread.start();
+	}
+	
+	public void sendPlayMessage(GomokuMove move) {
+		boolean black = (move.getColor() == Gomoku.BLACK ? true : false);
+		String playMessage = generatePlayMessage(black, move.getX(), move.getY());
+		Thread messageThread = new Thread(new MessageSender(playMessage));
+		messageThread.start();
+	}
+	
+	private class MessageSender implements Runnable {
+		
+		private String messageToSend;
+		
+		public MessageSender(String message) {
+			messageToSend = message;
+		}
+		
+		@Override
+		public void run() {
+			try {	
+				bTo.write(messageToSend);
+				bTo.flush();
+			} catch (IOException e) {
+				gui.displayMessage("Error sending message: '" + messageToSend + "'");
+			} catch (NullPointerException e) {
+				gui.displayMessage("Not connected to any server.");
+			}
+		}
+	}
+	
 	private class ServerListener extends Thread {
 		
 		@Override
@@ -124,9 +160,9 @@ public class GomokuClient extends GomokuProtocol {
 				try {
 					String messageReceived = bFrom.readLine();
 					if (isSetBlackColorMessage(messageReceived)) 
-						gui = new GomokuGUI(Gomoku.BLACK);
+						gui.setColor(Gomoku.BLACK);
 					else if (isSetWhiteColorMessage(messageReceived)) 
-						gui = new GomokuGUI(Gomoku.WHITE);
+						gui.setColor(Gomoku.WHITE);
 					else if (isPlayMessage(messageReceived)) {
 						int [] details = getPlayDetail(messageReceived);
 						gui.placePieceOnBoard(new GomokuMove(details[0], details[1], details[2]));
@@ -144,7 +180,8 @@ public class GomokuClient extends GomokuProtocol {
 						// TODO
 					}
 					else if (isChatMessage(messageReceived)) {
-						// TODO
+						String[] chatMessage = getChatDetail(messageReceived);
+						gui.displayMessage(chatMessage[0] + ": " + chatMessage[1]);
 					}
 					else {
 						throw new ClassNotFoundException();

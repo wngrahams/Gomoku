@@ -3,6 +3,9 @@ package client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -14,7 +17,9 @@ import gomoku.Gomoku;
 import gomoku.GomokuMove;
 
 @SuppressWarnings("serial")
-public class GomokuGUI extends JFrame {
+public class GomokuGUI extends JFrame implements ActionListener {
+	
+	private GomokuClient connectedClient;
 	
 	private JButton sendButton;
 	private JPanel chatPanel;
@@ -23,17 +28,16 @@ public class GomokuGUI extends JFrame {
 	private JTextField textEntry;
 	
 	private int userColor;
-
-	public static void main(String args[]) {
-		GomokuGUI gg = new GomokuGUI(Gomoku.BLACK);
-	}
 	
-	public GomokuGUI(int color) {
+	public GomokuGUI(GomokuClient gc) {
 		super();
-		userColor = color;
+		
+		userColor = Gomoku.EMPTY;
+		connectedClient = gc;
+		
 		initializePanels();
 		this.setBackground(Color.BLACK);
-		
+
 		setVisible(true);
 	}
 	
@@ -43,8 +47,10 @@ public class GomokuGUI extends JFrame {
 	}
 	
 	public void makeMove(int x, int y) {
-		GomokuMove move = new GomokuMove(x, y, userColor);
-		// send move to client
+		if (userColor != Gomoku.EMPTY) {
+			GomokuMove move = new GomokuMove(x, y, userColor);
+			connectedClient.sendPlayMessage(move);
+		}
 	}
 	
 	private void initializeChatPanel() {
@@ -56,9 +62,11 @@ public class GomokuGUI extends JFrame {
 	    JScrollPane textScrollPane = new JScrollPane(chatDisplay);
 	    
 	    JPanel typingPanel = new JPanel(new BorderLayout());
-	    textEntry = new JTextField();
+	    textEntry = new JTextField(15);
+	    textEntry.addActionListener(this);
 	    typingPanel.add(textEntry, BorderLayout.CENTER);
 	    sendButton = new JButton("Send");
+	    sendButton.addActionListener(this);
 	    typingPanel.add(sendButton, BorderLayout.EAST);
 	    
 	    chatPanel.add(textScrollPane, BorderLayout.CENTER);
@@ -87,5 +95,20 @@ public class GomokuGUI extends JFrame {
 	
 	public void placePieceOnBoard(GomokuMove move) {
 		gamePanel.drawPiece(move);
+	}
+	
+	public void setColor(int color) {
+		userColor = color;
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == sendButton || e.getSource() == textEntry) {
+			String text = textEntry.getText();
+			if (text != null && !text.isEmpty()) {				
+				connectedClient.sendChatMessage(text);
+				textEntry.setText(null);
+			}
+		}
 	}
 }
