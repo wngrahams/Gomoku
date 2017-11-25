@@ -37,6 +37,11 @@ public class GomokuGUI extends JFrame {
 		setVisible(true);
 	}
 	
+	public void displayMessage(String message) {
+		chatDisplay.append(message + "\n");
+		chatDisplay.setCaretPosition(chatDisplay.getDocument().getLength());
+	}
+	
 	public void makeMove(int x, int y) {
 		GomokuMove move = new GomokuMove(x, y, userColor);
 		// send move to client
@@ -80,7 +85,7 @@ public class GomokuGUI extends JFrame {
 	    initializeGamePanel();
 	}
 	
-	public void placePieceOnBoard(int x, int y) {
-		gamePanel.drawPiece(new GomokuMove(x, y, userColor));
+	public void placePieceOnBoard(GomokuMove move) {
+		gamePanel.drawPiece(move);
 	}
 }
