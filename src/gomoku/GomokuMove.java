@@ -6,7 +6,7 @@ public class GomokuMove {
 	private int xPos;
 	private int yPos;
 	
-	public GomokuMove(int x, int y, int color) {
+	public GomokuMove(int color, int x, int y) {
 		setColor(color);
 		setX(x);
 		setY(y);
