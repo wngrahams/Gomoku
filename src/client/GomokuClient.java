@@ -29,6 +29,7 @@ public class GomokuClient extends GomokuProtocol {
     
     private String user;
 	
+	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		GomokuClient cc;
 		if (args.length < 1)
