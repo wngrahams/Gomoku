@@ -145,10 +145,10 @@ public class GomokuGUI extends JFrame implements ActionListener {
 			}
 		}
 		else if (e.getSource() == nameChangeField) {
-			String newName = textEntry.getText();
+			String newName = nameChangeField.getText();
 			if (newName != null && !newName.isEmpty()) {				
 				connectedClient.sendChangeNameMessage(newName);
-				textEntry.setText(null);
+				nameChangeField.setText(null);
 			}
 		}
 		else if (e.getSource() == resetButton) {
