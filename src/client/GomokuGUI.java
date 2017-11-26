@@ -17,7 +17,6 @@ import javax.swing.JTextField;
 
 import gomoku.Gomoku;
 import gomoku.GomokuMove;
-import javafx.scene.layout.Border;
 
 @SuppressWarnings("serial")
 public class GomokuGUI extends JFrame implements ActionListener {
@@ -35,6 +34,9 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	private JTextField nameChangeField;
 	
 	private int userColor;
+	private String userName;
+	
+	private static final String TITLE = "Gomoku - ";
 	
 	public GomokuGUI(GomokuClient gc) {
 		super();
@@ -108,7 +110,8 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	}
 
 	private void initializePanels() {
-		setTitle("Gomoku");
+		userName = connectedClient.getUserName();
+		updateTitle();
 		setSize(750, 500);
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -133,6 +136,15 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	
 	public void setColor(int color) {
 		userColor = color;
+		updateTitle();
+	}
+	
+	private void updateTitle() {
+		setTitle(TITLE + userName + " - " + Gomoku.colorAsString(userColor));
+	}
+	
+	public void updateUserName(String user) {
+		userName = user;
 	}
 	
 	@Override

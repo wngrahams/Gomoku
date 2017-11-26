@@ -121,6 +121,10 @@ public class GomokuClient extends GomokuProtocol {
 		
 	}
 	
+	public String getUserName() {
+		return user;
+	}
+	
 	public void sendChatMessage(String message) {
 		String chatMessage = generateChatMessage(user, message);
 		sendMessage(chatMessage);
