@@ -5,18 +5,16 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import gomoku.Gomoku;
 import gomoku.GomokuMove;
 
 @SuppressWarnings("serial")
-public class GameBoardPanel extends JPanel implements MouseListener{
+public class GameBoardPanel extends JPanel implements MouseListener {
 	
 	private boolean humanUser;
 	private GomokuGUI connectedFrame;
-//	private int userColor;
 	
 	private int[][] gameState = new int[15][15];
 	
