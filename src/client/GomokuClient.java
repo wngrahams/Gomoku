@@ -1,12 +1,9 @@
 package client;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -22,10 +19,8 @@ public class GomokuClient extends GomokuProtocol {
 	private String serverIP;
 	private int serverPort;
 	
-	private InputStream fromServer;
-    private BufferedReader bFrom;
-    private OutputStream toServer;
-    private BufferedWriter bTo;
+	private PrintWriter outStream;
+    private BufferedReader inStream;
     
     private String user;
 	
@@ -83,10 +78,8 @@ public class GomokuClient extends GomokuProtocol {
 		gui.displayMessage("Connection successful.");
 		
 		try {
-			fromServer = socket.getInputStream();
-			bFrom = new BufferedReader(new InputStreamReader(fromServer));
-			toServer = socket.getOutputStream();
-			bTo = new BufferedWriter(new OutputStreamWriter(toServer));
+			outStream = new PrintWriter(socket.getOutputStream(), true);
+			inStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
 			gui.displayMessage("Error: An error occurred while connecting to server input/output streams.");
 			return false;
@@ -102,13 +95,13 @@ public class GomokuClient extends GomokuProtocol {
 	private void disconnectFromServer() {
 		// disconnect from the server:
 		try {
-			if (fromServer != null) {
-				fromServer.close();
-				fromServer = null;
+			if (outStream != null) {
+				outStream.close();
+				outStream = null;
 			}
-			if (toServer != null) {
-				toServer.close();
-				toServer = null;
+			if (inStream != null) {
+				inStream.close();
+				inStream = null;
 			}
 			if (socket != null) {
 				socket.close();
@@ -167,9 +160,14 @@ public class GomokuClient extends GomokuProtocol {
 		
 		@Override
 		public void run() {
-			try {	
-				bTo.write(messageToSend);
-				bTo.flush();
+			try {					
+				if (messageToSend != null) {
+			        System.out.println("Client: " + messageToSend);
+			        outStream.println(messageToSend);
+			    }
+				else
+					throw new IOException();
+				
 			} catch (IOException e) {
 				gui.displayMessage("Error sending message: '" + messageToSend + "'");
 			} catch (NullPointerException e) {
@@ -184,8 +182,11 @@ public class GomokuClient extends GomokuProtocol {
 		public void run() {
 			while (true) {
 				try {
-					String messageReceived = bFrom.readLine();
-					if (isSetBlackColorMessage(messageReceived)) 
+					String messageReceived = inStream.readLine();
+					
+					if (messageReceived == null) 
+						throw new IOException();				
+					else if (isSetBlackColorMessage(messageReceived)) 
 						gui.setColor(Gomoku.BLACK);
 					else if (isSetWhiteColorMessage(messageReceived)) 
 						gui.setColor(Gomoku.WHITE);
@@ -208,6 +209,9 @@ public class GomokuClient extends GomokuProtocol {
 					else if (isChatMessage(messageReceived)) {
 						String[] chatMessage = getChatDetail(messageReceived);
 						gui.displayMessage(chatMessage[0] + ": " + chatMessage[1]);
+					}
+					else if (isChangeNameMessage(messageReceived)) {
+						// TODO
 					}
 					else {
 						throw new ClassNotFoundException();

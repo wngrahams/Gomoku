@@ -2,10 +2,7 @@ package server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -64,6 +61,12 @@ public class GomokuServer {
 		}
 	}
 	
+	private void removeClientFromList(ClientThread client) {
+		synchronized(threadList) {
+			threadList.remove(this);
+		}
+	}
+	
 	/** 
 	 * Creates a new <code>ServerSocket</code> at the port given on class
 	 * creation. Then creates a new <code>Socket</code> to continually
@@ -119,20 +122,18 @@ public class GomokuServer {
 		private Socket clientSocket;
 		private String clientUser;
 		
-		private PrintWriter pSend;
-		private InputStream receive;
-		private BufferedReader bReceive;
+		private PrintWriter out;
+		private BufferedReader in;
+		
+		private String clientMessage;
 				
 		public ClientThread(Socket s) {
 			super();
 			clientSocket = s;
 			
 			try {
-				pSend = new PrintWriter(clientSocket.getOutputStream(), true);
-				receive = clientSocket.getInputStream();
-				bReceive = new BufferedReader(new InputStreamReader(receive));
-												
-//				serverFrame.displayMessage(new Message(clientUser, Message.USER_LOGON_MESSAGE));
+				out = new PrintWriter(clientSocket.getOutputStream(), true);
+		        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			} catch (IOException e) {
 				System.err.println("Error connecting client input/output stream");
 				return;
@@ -140,16 +141,14 @@ public class GomokuServer {
 		}
 		
 		protected void close() {
-			if (pSend != null) {
-				pSend.close();
+			if (out != null) {
+				out.close();
 			}
-			if (receive != null) {
+			if (in != null) {
 				try {
-					receive.close();
-					bReceive.close();
+					in.close();
 				} catch (IOException e) {
 					System.err.println("Error disconnecting from client input stream.");
-
 				}
 			}
 			if (clientSocket != null) {
@@ -166,33 +165,33 @@ public class GomokuServer {
 			boolean clientRun = true;
 			while (clientRun) {
 				try {
-					clientMessage = (Message)(receive.readUnshared());
-				} catch (ClassNotFoundException e) {
-					serverFrame.displayMessage(new Message("Unknown object recieved from '" + clientUser + "'"));
-					break;
+					clientMessage = in.readLine();
+					if (clientMessage == null) 
+						throw new IOException();
+					
+					out.println(clientMessage);
+					
+					System.out.println(clientMessage);
+					
 				} catch (IOException e) {
-					serverFrame.displayMessage(new Message(clientUser, Message.USER_LOGOFF_MESSAGE));
+					// user has disconnected off
+					System.err.println("User has disconnected");
 					break;
 				}
 
 				// first check if it's a name change, if the new name is available
-				if (clientMessage.getType() == Message.USER_NAME_MESSAGE && !checkNameAvailable(clientMessage.getMessage()))
-						sendMessageToClient(new Message(clientUser, User.SERVER, "Name '" + clientMessage.getMessage() + "' is not available."));
-				else
-					sendMessageToClient(clientMessage);
+//				if (clientMessage.getType() == Message.USER_NAME_MESSAGE && !checkNameAvailable(clientMessage.getMessage()))
+//						sendMessageToClient(new Message(clientUser, User.SERVER, "Name '" + clientMessage.getMessage() + "' is not available."));
+//				else
+//					sendMessageToClient(clientMessage);
 			}
 			
 			removeClientFromList(this);
-			sendMessageToClient(new Message(User.SERVER, clientUser, "disconnect", Message.USER_LOGOFF_MESSAGE));
+//			sendMessage(clientMessage);
 			close();
 		}
 		
-		/** 
-		 * Returns the <code>User</code> associated with this client
-		 * 
-		 * @return The <code>User</code> associated with this client
-		 */
-		public User getUser() {
+		public String getUser() {
 			return clientUser;
 		}
 		
@@ -203,38 +202,40 @@ public class GomokuServer {
 		 * @param m The <code>Message</code> to be written
 		 * @return <code>true</code> if the message is successfully sent, <code>false</code> otherwise
 		 */
-		public boolean sendMessage(Message m) {
+		public boolean sendMessage(String message) {
 			if (!clientSocket.isConnected() || clientSocket.isClosed()) {
 				close();
 				return false;
 			}
 			
-			try {
-				if (m.getType() == Message.TEXT_MESSAGE) {
-					send.writeUnshared(m);
-				}
-				else if (m.getType() == Message.USER_NAME_MESSAGE) {
-					send.writeUnshared(m);
-					
-					// Change name only for user that sent this name change request
-					if (clientUser.equals(m.getSender())) {
-						User oldUser = new User(clientUser);
-						clientUser = new User(m.getMessage(), clientUser.getIP());
-						serverFrame.displayMessage(new Message(clientUser, oldUser, clientUser.getNickname(), Message.USER_NAME_MESSAGE));
-						send.writeUnshared(new Message(clientUser, User.SERVER, "Successfully changed name from '" + oldUser + "' to '" + clientUser + "'"));
-					}
-				}	
-				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
-					// No need to send to the user that logged on/off
-					if (m.getSender() != clientUser) 
-						send.writeUnshared(m);
-				}
+//			try {
 				
-			} catch (IOException e) {
-				serverFrame.displayMessage(new Message("Error sending message to " + clientUser));
-				e.printStackTrace();
-				return false;
-			}
+//				pSend.println(clientMessage);
+//				pSend.flush();
+//				if (m.getType() == Message.TEXT_MESSAGE) {
+//					send.writeUnshared(m);
+//				}
+//				else if (m.getType() == Message.USER_NAME_MESSAGE) {
+//					send.writeUnshared(m);
+//					
+//					// Change name only for user that sent this name change request
+//					if (clientUser.equals(m.getSender())) {
+//						User oldUser = new User(clientUser);
+//						clientUser = new User(m.getMessage(), clientUser.getIP());
+//						serverFrame.displayMessage(new Message(clientUser, oldUser, clientUser.getNickname(), Message.USER_NAME_MESSAGE));
+//						send.writeUnshared(new Message(clientUser, User.SERVER, "Successfully changed name from '" + oldUser + "' to '" + clientUser + "'"));
+//					}
+//				}	
+//				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
+//					// No need to send to the user that logged on/off
+//					if (m.getSender() != clientUser) 
+//						send.writeUnshared(m);
+//				}
+				
+//			} catch (IOException e) {
+//				System.err.println("Error sending message to " + clientUser);
+//				return false;
+//			}
 			
 			return true;
 		}
