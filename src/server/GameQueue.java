@@ -1,4 +1,4 @@
-package gomoku;
+package server;
 
 import java.util.EmptyStackException;
 import java.util.Stack;
