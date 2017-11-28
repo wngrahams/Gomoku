@@ -12,7 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import gomoku.Gomoku;
 import gomoku.GomokuProtocol;
 
-public class GomokuServer implements GomokuProtocol {
+public class GomokuServer {
 	
 	private int port;
 	private boolean keepRunning;
@@ -320,6 +320,10 @@ public class GomokuServer implements GomokuProtocol {
 				gameState[info[1]][info[2]] = info[0];
 				black.sendMessage(playMessage);
 				white.sendMessage(playMessage);
+				int[] results = Gomoku.isGameOver(gameState);
+				if (results[0] == Gomoku.GAME_OVER) {
+					setWinner(results[1]);
+				}
 			}
 			else {
 				if (info[0] == Gomoku.BLACK)
@@ -360,6 +364,13 @@ public class GomokuServer implements GomokuProtocol {
 			}
 		}
 		
-		
+		public void setWinner(int winner) {
+			if (winner == Gomoku.BLACK) {
+				setWinner(black);
+			}
+			else if (winner == Gomoku.WHITE) {
+				setWinner(white);
+			}
+		}
 	}
 }
