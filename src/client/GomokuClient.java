@@ -186,19 +186,23 @@ public class GomokuClient extends GomokuProtocol {
 					
 					if (messageReceived == null) 
 						throw new IOException();				
-					else if (isSetBlackColorMessage(messageReceived)) 
+					else if (isSetBlackColorMessage(messageReceived)) {
 						gui.setColor(Gomoku.BLACK);
-					else if (isSetWhiteColorMessage(messageReceived)) 
+						gui.displayMessage("New game started. Your color is: BLACK");
+					}
+					else if (isSetWhiteColorMessage(messageReceived)) {
 						gui.setColor(Gomoku.WHITE);
+						gui.displayMessage("New game started. Your color is: WHITE");
+					}
 					else if (isPlayMessage(messageReceived)) {
 						int [] details = getPlayDetail(messageReceived);
 						gui.placePieceOnBoard(new GomokuMove(details[0], details[1], details[2]));
 					}
 					else if (isWinMessage(messageReceived)) {
-						// TODO
+						gui.displayMessage("You Win!");
 					}
 					else if (isLoseMessage(messageReceived)) {
-						// TODO
+						gui.displayMessage("You Lose!");
 					}
 					else if (isResetMessage(messageReceived)) {
 						// TODO

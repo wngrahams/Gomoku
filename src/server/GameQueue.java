@@ -1,5 +1,7 @@
 package server;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
@@ -31,14 +33,16 @@ public class GameQueue<T> {
 			return s2.pop();
 	}
 	
-	public T[] dequeuePair() {
+	public ArrayList<T> dequeuePair() {
 		if (!isPairAvailable())
 			return null;
 		
 		T first = this.dequeue();
 		T second = this.dequeue();
 		
-		T[] pair = pairToArray(first, second);
+		ArrayList<T> pair = new ArrayList<T>(2);
+		pair.add(first);
+		pair.add(second);
 		
 		return pair;
 	}
@@ -61,11 +65,6 @@ public class GameQueue<T> {
 			else 
 				return true;
 		}
-	}
-	
-	@SafeVarargs
-	private static <T> T[] pairToArray(final T... values) {
-		return (values);
 	}
 
 	public T peek() {

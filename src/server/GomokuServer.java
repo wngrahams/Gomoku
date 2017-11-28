@@ -7,8 +7,12 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class GomokuServer {
+import gomoku.Gomoku;
+import gomoku.GomokuProtocol;
+
+public class GomokuServer extends GomokuProtocol {
 	
 	private int port;
 	private boolean keepRunning;
@@ -16,7 +20,10 @@ public class GomokuServer {
 	private static final int DEFAULT_PORT = 0xFFFF;
 	
 	// An ArrayList to keep track of all connected clients
-	private ArrayList<ClientThread> threadList;
+	private ArrayList<ClientThread> threadList = new ArrayList<ClientThread>();
+	
+	private GameQueue<ClientThread> waitingQueue = new GameQueue<ClientThread>();
+	private ArrayList<GameThread> activeGames = new ArrayList<GameThread>();
 	
 	
 	@SuppressWarnings("unused")
@@ -44,9 +51,14 @@ public class GomokuServer {
 	
 	public GomokuServer(int port) {
 		this.port = port;
-		threadList = new ArrayList<ClientThread>();
 		
 		startServer();
+	}
+	
+	private void addToWaitingQueue(ClientThread c) {
+		synchronized (waitingQueue) {
+			waitingQueue.enqueue(c);
+		}
 	}
 	
 	private boolean checkNameAvailable(String name) {
@@ -61,6 +73,18 @@ public class GomokuServer {
 		}
 	}
 	
+	private void makeGamePair() {
+		synchronized (waitingQueue) {
+			ArrayList<ClientThread> pair = waitingQueue.dequeuePair();
+			if (pair != null) {
+				GameThread newGame = new GameThread(pair.get(0), pair.get(1));
+				newGame.start();
+				
+				activeGames.add(newGame);
+			}
+		}
+	}
+	
 	private void removeClientFromList(ClientThread client) {
 		synchronized(threadList) {
 			threadList.remove(this);
@@ -70,8 +94,8 @@ public class GomokuServer {
 	/** 
 	 * Creates a new <code>ServerSocket</code> at the port given on class
 	 * creation. Then creates a new <code>Socket</code> to continually
-	 * listen for new client connections. Terminates on <code>ServerFrame</code>
-	 * close or if an error is encountered when creating the <code>ServerSocket</code>
+	 * listen for new client connections. Terminates 
+	 * if an error is encountered when creating the <code>ServerSocket</code>.
 	 */
 	private void startServer() {
 		keepRunning = true;
@@ -93,6 +117,9 @@ public class GomokuServer {
 					ClientThread newClient = new ClientThread(clientSocket);
 					threadList.add(newClient);
 					newClient.start();
+					
+					addToWaitingQueue(newClient);
+			        makeGamePair();
 				} catch (IOException e) {
 					System.err.println("Error connecting to client.");
 				} 
@@ -113,8 +140,6 @@ public class GomokuServer {
 		} catch (IllegalArgumentException e) {
 			System.err.println("Port value out of range: " + port);
 		}
-		
-		
 	}
 
 	private class ClientThread extends Thread {
@@ -126,6 +151,8 @@ public class GomokuServer {
 		private BufferedReader in;
 		
 		private String clientMessage;
+		
+		private GameThread currentGame;
 				
 		public ClientThread(Socket s) {
 			super();
@@ -138,6 +165,10 @@ public class GomokuServer {
 				System.err.println("Error connecting client input/output stream");
 				return;
 			} 
+		}
+		
+		public void setCurrentGame(GameThread game) {
+			currentGame = game;
 		}
 		
 		protected void close() {
@@ -169,25 +200,26 @@ public class GomokuServer {
 					if (clientMessage == null) 
 						throw new IOException();
 					
-					out.println(clientMessage);
-					
 					System.out.println(clientMessage);
 					
+					if (isPlayMessage(clientMessage)) {
+						if (currentGame != null)
+							currentGame.processPlayMessage(clientMessage);
+						else {
+							String error = generateChatMessage("Server", "Please wait to be connected to a game.");
+							sendMessage(error);
+						}
+					}
+					
 				} catch (IOException e) {
-					// user has disconnected off
+					// user has disconnected
 					System.err.println("User has disconnected");
+					currentGame.setLoser(this);
 					break;
 				}
-
-				// first check if it's a name change, if the new name is available
-//				if (clientMessage.getType() == Message.USER_NAME_MESSAGE && !checkNameAvailable(clientMessage.getMessage()))
-//						sendMessageToClient(new Message(clientUser, User.SERVER, "Name '" + clientMessage.getMessage() + "' is not available."));
-//				else
-//					sendMessageToClient(clientMessage);
 			}
 			
 			removeClientFromList(this);
-//			sendMessage(clientMessage);
 			close();
 		}
 		
@@ -195,49 +227,113 @@ public class GomokuServer {
 			return clientUser;
 		}
 		
-		/** 
-		 * Uses the client's <code>ObjectOutputStream</code> to write the 
-		 * given <code>Message</code> over the network to the client
-		 * 
-		 * @param m The <code>Message</code> to be written
-		 * @return <code>true</code> if the message is successfully sent, <code>false</code> otherwise
-		 */
 		public boolean sendMessage(String message) {
 			if (!clientSocket.isConnected() || clientSocket.isClosed()) {
 				close();
 				return false;
 			}
 			
-//			try {
+			try {
 				
-//				pSend.println(clientMessage);
-//				pSend.flush();
-//				if (m.getType() == Message.TEXT_MESSAGE) {
-//					send.writeUnshared(m);
-//				}
-//				else if (m.getType() == Message.USER_NAME_MESSAGE) {
-//					send.writeUnshared(m);
-//					
-//					// Change name only for user that sent this name change request
-//					if (clientUser.equals(m.getSender())) {
-//						User oldUser = new User(clientUser);
-//						clientUser = new User(m.getMessage(), clientUser.getIP());
-//						serverFrame.displayMessage(new Message(clientUser, oldUser, clientUser.getNickname(), Message.USER_NAME_MESSAGE));
-//						send.writeUnshared(new Message(clientUser, User.SERVER, "Successfully changed name from '" + oldUser + "' to '" + clientUser + "'"));
-//					}
-//				}	
-//				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
-//					// No need to send to the user that logged on/off
-//					if (m.getSender() != clientUser) 
-//						send.writeUnshared(m);
-//				}
+				if (message == null) 
+					throw new IOException();	
+					
+				out.println(message);
 				
-//			} catch (IOException e) {
-//				System.err.println("Error sending message to " + clientUser);
-//				return false;
-//			}
+			} catch (IOException e) {
+				System.err.println("Error sending message to " + clientUser);
+				return false;
+			}
 			
 			return true;
 		}
+	}
+	
+	private class GameThread extends Thread {
+		
+		private ClientThread black;
+		private ClientThread white;
+		
+		private int[][] gameState = new int[15][15];
+		
+		public GameThread(ClientThread p1, ClientThread p2) {
+			
+			for (int i=0; i<15; i++) {
+				for (int j=0; j<15; j++)
+					gameState[i][j] = Gomoku.EMPTY;
+			}
+			
+			int rand = ThreadLocalRandom.current().nextInt(0, 2);
+			if (rand%2 == 0) {
+				setBlack(p1);
+				setWhite(p2);
+			}
+			else {
+				setBlack(p2);
+				setWhite(p1);
+			}
+			
+			black.setCurrentGame(this);
+			white.setCurrentGame(this);
+			
+			black.sendMessage(generateSetBlackColorMessage());
+			white.sendMessage(generateSetWhiteColorMessage());
+		}
+
+		public ClientThread getBlack() {
+			return black;
+		}
+
+		public ClientThread getWhite() {
+			return white;
+		}
+		
+		public void processPlayMessage(String playMessage) {
+			int[] info = getPlayDetail(playMessage);
+			if (gameState[info[1]][info[2]] == Gomoku.EMPTY) {
+				gameState[info[1]][info[2]] = info[0];
+				black.sendMessage(playMessage);
+				white.sendMessage(playMessage);
+			}
+			else {
+				if (info[0] == Gomoku.BLACK)
+					black.sendMessage(generateChatMessage("Server", "That is an invalid move."));
+				else if (info[0] == Gomoku.WHITE)
+					white.sendMessage(generateChatMessage("Server", "That is an invalid move."));
+			}
+		}
+		
+		public void setBlack(ClientThread black) {
+			this.black = black;
+		}
+		
+		public void setLoser(ClientThread loser) {
+			if (loser == black) {
+				setResults(white, black);
+			}
+			else if (loser == white) {
+				setResults(black, white);
+			}
+		}
+		
+		private void setResults(ClientThread winner, ClientThread loser) {
+			winner.sendMessage(generateWinMessage());
+			loser.sendMessage(generateLoseMessage());
+		}
+
+		public void setWhite(ClientThread white) {
+			this.white = white;
+		}
+		
+		public void setWinner(ClientThread winner) {
+			if (winner == black) {
+				setResults(black, white);
+			}
+			else if (winner == white) {
+				setResults(white, black);
+			}
+		}
+		
+		
 	}
 }
