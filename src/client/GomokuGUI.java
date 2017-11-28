@@ -37,6 +37,8 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	private String userName;
 	private boolean humanUser;
 	
+	private boolean gameOver = false;
+	
 	private static final String TITLE = "Gomoku - ";
 	
 	public GomokuGUI(GomokuClient gc) {
@@ -62,9 +64,12 @@ public class GomokuGUI extends JFrame implements ActionListener {
 		chatDisplay.setCaretPosition(chatDisplay.getDocument().getLength());
 	}
 	
-//	public int getColor() {
-//		return userColor;
-//	}
+	public void gameOver() {
+		gameOver = true;
+		if(humanUser) {
+			gamePanel.removeMouseListener(gamePanel);
+		}
+	}
 	
 	private void initializeChatPanel() {
 		chatPanel = new JPanel(new BorderLayout());
@@ -132,6 +137,10 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	    initializeChatPanel();
 	    initializeGamePanel();
 	    initializeOptionsPanel();
+	}
+	
+	public boolean isGameOver() {
+		return gameOver;
 	}
 
 	public void makeMove(int row, int col) {
