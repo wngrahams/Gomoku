@@ -223,6 +223,12 @@ public class GomokuServer extends GomokuProtocol {
 							sendMessage(error);
 						}
 					}
+					else if (isChatMessage(clientMessage)) {
+						if (currentGame != null)
+							currentGame.processChatMessage(clientMessage);
+						else
+							sendMessage(clientMessage);
+					}
 					
 				} catch (IOException e) {
 					// user has disconnected
@@ -301,6 +307,11 @@ public class GomokuServer extends GomokuProtocol {
 
 		public ClientThread getWhite() {
 			return white;
+		}
+		
+		public void processChatMessage(String chatMessage) {
+			black.sendMessage(chatMessage);
+			white.sendMessage(chatMessage);
 		}
 		
 		public void processPlayMessage(String playMessage) {
