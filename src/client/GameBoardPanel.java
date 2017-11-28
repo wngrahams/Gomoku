@@ -33,6 +33,8 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 	
 	public void drawPiece(GomokuMove move) {
 		gameState[move.getX()][move.getY()] = move.getColor();
+		
+		repaint();
 	}
 	
 	private void initializePanel() {
@@ -48,6 +50,8 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 				gameState[i][j] = Gomoku.EMPTY;
 			}
 		}
+		
+		repaint();
 	}
 	
 	@Override
@@ -76,8 +80,6 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 		
 		if (xGrid >= 0 && xGrid < 15 && yGrid >=0 && yGrid < 15)
 			connectedFrame.makeMove(roundedX, roundedY);
-		
-		repaint();
 	}
 
 	@Override

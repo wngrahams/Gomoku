@@ -162,7 +162,6 @@ public class GomokuClient extends GomokuProtocol {
 		public void run() {
 			try {					
 				if (messageToSend != null) {
-			        System.out.println("Client: " + messageToSend);
 			        outStream.println(messageToSend);
 			    }
 				else

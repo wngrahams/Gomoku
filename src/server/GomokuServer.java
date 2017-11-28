@@ -23,7 +23,7 @@ public class GomokuServer extends GomokuProtocol {
 	private ArrayList<ClientThread> threadList = new ArrayList<ClientThread>();
 	
 	private GameQueue<ClientThread> waitingQueue = new GameQueue<ClientThread>();
-	private ArrayList<GameThread> activeGames = new ArrayList<GameThread>();
+	private ArrayList<GameManager> activeGames = new ArrayList<GameManager>();
 	
 	
 	@SuppressWarnings("unused")
@@ -77,8 +77,8 @@ public class GomokuServer extends GomokuProtocol {
 		synchronized (waitingQueue) {
 			ArrayList<ClientThread> pair = waitingQueue.dequeuePair();
 			if (pair != null) {
-				GameThread newGame = new GameThread(pair.get(0), pair.get(1));
-				newGame.start();
+				GameManager newGame = new GameManager(pair.get(0), pair.get(1));
+//				newGame.start();
 				
 				activeGames.add(newGame);
 			}
@@ -152,7 +152,7 @@ public class GomokuServer extends GomokuProtocol {
 		
 		private String clientMessage;
 		
-		private GameThread currentGame;
+		private GameManager currentGame;
 				
 		public ClientThread(Socket s) {
 			super();
@@ -165,10 +165,6 @@ public class GomokuServer extends GomokuProtocol {
 				System.err.println("Error connecting client input/output stream");
 				return;
 			} 
-		}
-		
-		public void setCurrentGame(GameThread game) {
-			currentGame = game;
 		}
 		
 		protected void close() {
@@ -198,11 +194,8 @@ public class GomokuServer extends GomokuProtocol {
 				try {
 					clientMessage = in.readLine();
 					if (clientMessage == null) 
-						throw new IOException();
-					
-					System.out.println(clientMessage);
-					
-					if (isPlayMessage(clientMessage)) {
+						throw new IOException();					
+					else if (isPlayMessage(clientMessage)) {
 						if (currentGame != null)
 							currentGame.processPlayMessage(clientMessage);
 						else {
@@ -214,7 +207,9 @@ public class GomokuServer extends GomokuProtocol {
 				} catch (IOException e) {
 					// user has disconnected
 					System.err.println("User has disconnected");
-					currentGame.setLoser(this);
+					if (currentGame != null)
+						currentGame.setLoser(this);
+					
 					break;
 				}
 			}
@@ -247,16 +242,20 @@ public class GomokuServer extends GomokuProtocol {
 			
 			return true;
 		}
+		
+		public void setCurrentGame(GameManager game) {
+			currentGame = game;
+		}
 	}
 	
-	private class GameThread extends Thread {
+	private class GameManager {
 		
 		private ClientThread black;
 		private ClientThread white;
 		
 		private int[][] gameState = new int[15][15];
 		
-		public GameThread(ClientThread p1, ClientThread p2) {
+		public GameManager(ClientThread p1, ClientThread p2) {
 			
 			for (int i=0; i<15; i++) {
 				for (int j=0; j<15; j++)
