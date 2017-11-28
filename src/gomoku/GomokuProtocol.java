@@ -1,18 +1,17 @@
 package gomoku;
 
-
-public class GomokuProtocol {
+public interface GomokuProtocol {
     
-    private static final String SEPARATOR = "\0";
-    private static final String MESSAGE_PLAY = SEPARATOR + "/play";
-    private static final String MESSAGE_SET_BLACK = SEPARATOR + "/black";
-    private static final String MESSAGE_SET_WHITE = SEPARATOR + "/white";
-    private static final String MESSAGE_WIN= SEPARATOR + "/win";
-    private static final String MESSAGE_LOSE = SEPARATOR + "/lose";
-    private static final String MESSAGE_RESET = SEPARATOR + "/reset";
-    private static final String MESSAGE_GIVEUP = SEPARATOR + "/giveup";
-    private static final String MESSAGE_CHAT = SEPARATOR + "/chat";
-    private static final String MESSAGE_CHANGE_NAME = SEPARATOR + "/nick";
+    static final String SEPARATOR = "\0";
+    static final String MESSAGE_PLAY = SEPARATOR + "/play";
+    static final String MESSAGE_SET_BLACK = SEPARATOR + "/black";
+    static final String MESSAGE_SET_WHITE = SEPARATOR + "/white";
+    static final String MESSAGE_WIN= SEPARATOR + "/win";
+    static final String MESSAGE_LOSE = SEPARATOR + "/lose";
+    static final String MESSAGE_RESET = SEPARATOR + "/reset";
+    static final String MESSAGE_GIVEUP = SEPARATOR + "/giveup";
+    static final String MESSAGE_CHAT = SEPARATOR + "/chat";
+    static final String MESSAGE_CHANGE_NAME = SEPARATOR + "/nick";
     
     public static String generateChatMessage(String sender, String chat) {
         StringBuilder sb = new StringBuilder();
