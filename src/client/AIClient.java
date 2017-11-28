@@ -33,10 +33,23 @@ public class AIClient extends GomokuClient {
 	public AIClient(String ip, int port) {
 		super(ip, port, false);
 	}
+	
+	private void calculateNextMove() {
+		
+	}
 
 	@Override
 	protected void initializeUserName() {
 		int rand = ThreadLocalRandom.current().nextInt(1, 100000);
 		setUserName("AI" + Integer.toString(rand));
+	}
+	
+	@Override
+	protected void updatePlayerTurn() {
+		myTurn = !myTurn;
+		if (myTurn)
+			gui.displayMessage("It's your turn");
+		
+		calculateNextMove();
 	}
 }

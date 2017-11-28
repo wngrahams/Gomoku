@@ -158,7 +158,7 @@ public abstract class GomokuClient implements GomokuProtocol {
 		user = u;
 	}
 	
-	private void updatePlayerTurn() {
+	protected void updatePlayerTurn() {
 		myTurn = !myTurn;
 		if (myTurn)
 			gui.displayMessage("It's your turn");
