@@ -12,7 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import gomoku.Gomoku;
 import gomoku.GomokuProtocol;
 
-public class GomokuServer extends GomokuProtocol {
+public class GomokuServer implements GomokuProtocol {
 	
 	private int port;
 	private boolean keepRunning;
@@ -215,15 +215,15 @@ public class GomokuServer extends GomokuProtocol {
 					clientMessage = in.readLine();
 					if (clientMessage == null) 
 						throw new IOException();					
-					else if (isPlayMessage(clientMessage)) {
+					else if (GomokuProtocol.isPlayMessage(clientMessage)) {
 						if (currentGame != null)
 							currentGame.processPlayMessage(clientMessage);
 						else {
-							String error = generateChatMessage("Server", "Please wait to be connected to a game.");
+							String error = GomokuProtocol.generateChatMessage("Server", "Please wait to be connected to a game.");
 							sendMessage(error);
 						}
 					}
-					else if (isChatMessage(clientMessage)) {
+					else if (GomokuProtocol.isChatMessage(clientMessage)) {
 						if (currentGame != null)
 							currentGame.processChatMessage(clientMessage);
 						else
@@ -297,8 +297,8 @@ public class GomokuServer extends GomokuProtocol {
 			black.setCurrentGame(this);
 			white.setCurrentGame(this);
 			
-			black.sendMessage(generateSetBlackColorMessage());
-			white.sendMessage(generateSetWhiteColorMessage());
+			black.sendMessage(GomokuProtocol.generateSetBlackColorMessage());
+			white.sendMessage(GomokuProtocol.generateSetWhiteColorMessage());
 		}
 
 		public ClientThread getBlack() {
@@ -315,7 +315,7 @@ public class GomokuServer extends GomokuProtocol {
 		}
 		
 		public void processPlayMessage(String playMessage) {
-			int[] info = getPlayDetail(playMessage);
+			int[] info = GomokuProtocol.getPlayDetail(playMessage);
 			if (gameState[info[1]][info[2]] == Gomoku.EMPTY) {
 				gameState[info[1]][info[2]] = info[0];
 				black.sendMessage(playMessage);
@@ -323,9 +323,9 @@ public class GomokuServer extends GomokuProtocol {
 			}
 			else {
 				if (info[0] == Gomoku.BLACK)
-					black.sendMessage(generateChatMessage("Server", "That is an invalid move."));
+					black.sendMessage(GomokuProtocol.generateChatMessage("Server", "That is an invalid move."));
 				else if (info[0] == Gomoku.WHITE)
-					white.sendMessage(generateChatMessage("Server", "That is an invalid move."));
+					white.sendMessage(GomokuProtocol.generateChatMessage("Server", "That is an invalid move."));
 			}
 		}
 		
@@ -343,8 +343,8 @@ public class GomokuServer extends GomokuProtocol {
 		}
 		
 		private void setResults(ClientThread winner, ClientThread loser) {
-			winner.sendMessage(generateWinMessage());
-			loser.sendMessage(generateLoseMessage());
+			winner.sendMessage(GomokuProtocol.generateWinMessage());
+			loser.sendMessage(GomokuProtocol.generateLoseMessage());
 		}
 
 		public void setWhite(ClientThread white) {
