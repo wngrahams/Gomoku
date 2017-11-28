@@ -13,7 +13,7 @@ import gomoku.GomokuProtocol;
 
 public abstract class GomokuClient implements GomokuProtocol {
 	
-	private GomokuGUI gui;
+	protected GomokuGUI gui;
 	
 	private Socket socket; 
 	private String serverIP;
@@ -24,6 +24,7 @@ public abstract class GomokuClient implements GomokuProtocol {
     
     private String user;
     private boolean humanUser = false;
+    protected boolean myTurn = false;
     
     protected static final int DEFAULT_PORT = 0xFFFF;
 	
@@ -40,7 +41,7 @@ public abstract class GomokuClient implements GomokuProtocol {
 	}
 	
 	public GomokuClient(int port, boolean human) {
-		this("localhost", port, false);
+		this("localhost", port, human);
 	}
 	
 	public GomokuClient(String ip, int port, boolean human) {
@@ -50,7 +51,7 @@ public abstract class GomokuClient implements GomokuProtocol {
 		
 		initializeUserName();
 		
-		gui = new GomokuGUI(this);
+		gui = new GomokuGUI(this, humanUser);
 		
 		if(!connectToServer())
 			disconnectFromServer();
@@ -114,6 +115,10 @@ public abstract class GomokuClient implements GomokuProtocol {
 	
 	protected abstract void initializeUserName();
 	
+//	public boolean isMyTurn() {
+//		return myTurn;
+//	}
+	
 	protected void sendChatMessage(String message) {
 		String chatMessage = GomokuProtocol.generateChatMessage(user, message);
 		sendMessage(chatMessage);
@@ -135,9 +140,13 @@ public abstract class GomokuClient implements GomokuProtocol {
 	}
 	
 	protected void sendPlayMessage(GomokuMove move) {
-		boolean black = (move.getColor() == Gomoku.BLACK ? true : false);
-		String playMessage = GomokuProtocol.generatePlayMessage(black, move.getX(), move.getY());
-		sendMessage(playMessage);
+		if (myTurn) {
+			boolean black = (move.getColor() == Gomoku.BLACK ? true : false);
+			String playMessage = GomokuProtocol.generatePlayMessage(black, move.getX(), move.getY());
+			sendMessage(playMessage);
+		}
+		else 
+			gui.displayMessage("It's not your turn.");
 	}
 	
 	protected void sendResetMessage() {
@@ -147,6 +156,12 @@ public abstract class GomokuClient implements GomokuProtocol {
 	
 	public void setUserName(String u) {
 		user = u;
+	}
+	
+	private void updatePlayerTurn() {
+		myTurn = !myTurn;
+		if (myTurn)
+			gui.displayMessage("It's your turn");
 	}
 	
 	private class MessageSender implements Runnable {
@@ -187,6 +202,7 @@ public abstract class GomokuClient implements GomokuProtocol {
 					else if (GomokuProtocol.isSetBlackColorMessage(messageReceived)) {
 						gui.setColor(Gomoku.BLACK);
 						gui.displayMessage("New game started. Your color is: BLACK");
+						updatePlayerTurn();
 					}
 					else if (GomokuProtocol.isSetWhiteColorMessage(messageReceived)) {
 						gui.setColor(Gomoku.WHITE);
@@ -195,12 +211,15 @@ public abstract class GomokuClient implements GomokuProtocol {
 					else if (GomokuProtocol.isPlayMessage(messageReceived)) {
 						int [] details = GomokuProtocol.getPlayDetail(messageReceived);
 						gui.placePieceOnBoard(new GomokuMove(details[0], details[1], details[2]));
+						updatePlayerTurn();
 					}
 					else if (GomokuProtocol.isWinMessage(messageReceived)) {
 						gui.displayMessage("You Win!");
+						myTurn = false;
 					}
 					else if (GomokuProtocol.isLoseMessage(messageReceived)) {
 						gui.displayMessage("You Lose!");
+						myTurn = false;
 					}
 					else if (GomokuProtocol.isResetMessage(messageReceived)) {
 						// TODO
