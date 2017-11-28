@@ -19,7 +19,7 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 	private int[][] gameState = new int[15][15];
 	
 	public GameBoardPanel(GomokuGUI g) {
-		this(g, true);
+		this(g, false);
 	}
 
 	public GameBoardPanel(GomokuGUI g, boolean human) {
@@ -32,7 +32,9 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 	}
 	
 	public void drawPiece(GomokuMove move) {
-		gameState[move.getX()][move.getY()] = move.getColor();
+		gameState[move.getRow()][move.getColumn()] = move.getColor();
+		
+		repaint();
 	}
 	
 	private void initializePanel() {
@@ -42,12 +44,18 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 			addMouseListener(this);
 	}
 	
+	public int[][] getGameState() {
+		return gameState;
+	}
+	
 	public void resetBoard() {
 		for (int i=0; i<15; i++) {
 			for (int j=0; j<15; j++) {
 				gameState[i][j] = Gomoku.EMPTY;
 			}
 		}
+		
+		repaint();
 	}
 	
 	@Override
@@ -75,9 +83,7 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 			roundedY = -1;
 		
 		if (xGrid >= 0 && xGrid < 15 && yGrid >=0 && yGrid < 15)
-			connectedFrame.makeMove(roundedX, roundedY);
-		
-		repaint();
+			connectedFrame.makeMove(roundedY, roundedX);
 	}
 
 	@Override
@@ -122,7 +128,7 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 						g.setColor(Color.BLACK);
 					
 					double diameter = Math.min(cubeWidth, cubeHeight);
-					g.fillOval((int)(cubeWidth*(i+1) - diameter/2.0), (int)(cubeHeight*(j+1) - diameter/2.0), (int)diameter, (int)diameter);
+					g.fillOval((int)(cubeWidth*(j+1) - diameter/2.0), (int)(cubeHeight*(i+1) - diameter/2.0), (int)diameter, (int)diameter);
 				}
 			}
 		}

@@ -1,12 +1,9 @@
 package client;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -14,55 +11,47 @@ import gomoku.Gomoku;
 import gomoku.GomokuMove;
 import gomoku.GomokuProtocol;
 
-public class GomokuClient extends GomokuProtocol {
+public abstract class GomokuClient {
 	
-	private GomokuGUI gui;
+	protected GomokuGUI gui;
 	
 	private Socket socket; 
 	private String serverIP;
 	private int serverPort;
 	
-	private InputStream fromServer;
-    private BufferedReader bFrom;
-    private OutputStream toServer;
-    private BufferedWriter bTo;
+	private PrintWriter outStream;
+    private BufferedReader inStream;
     
     private String user;
-	
-	@SuppressWarnings("unused")
-	public static void main(String[] args) {
-		GomokuClient cc;
-		if (args.length < 1)
-			cc = new GomokuClient();
-		else if (args.length < 2 || args.length > 2)
-			System.out.println("Usage: java GomokuClient <hostname> <port_number>");
-		else {
-			try {
-				int portInt = Integer.parseInt(args[1]);
-				cc = new GomokuClient(args[0], portInt);
-			} catch (NumberFormatException e) {
-				System.out.println("Usage: java GomokuClient <hostname> <port_number>");
-				System.out.println("Port number should be an integer less than " + 0xFFFF);
-			}
-		}
-	}
+    private boolean humanUser = false;
+    protected boolean myTurn = false;
+    
+    protected static final int DEFAULT_PORT = 0xFFFF;
 	
 	public GomokuClient() {
-		this("localhost", 0xFFFF);
+		this("localhost", DEFAULT_PORT, false);
 	}
 	
 	public GomokuClient(int port) {
-		this("localhost", port);
+		this(port, false);
 	}
 	
-	public GomokuClient(String ip, int port) {
+	public GomokuClient(boolean human) {
+		this(DEFAULT_PORT, human);
+	}
+	
+	public GomokuClient(int port, boolean human) {
+		this("localhost", port, human);
+	}
+	
+	public GomokuClient(String ip, int port, boolean human) {
 		serverIP = ip;
 		serverPort = port;
+		humanUser = human;
 		
-		int rand = (int) (Math.random() * 100000 + 1);
-		user = "user" + Integer.toString(rand);
+		initializeUserName();
 		
-		gui = new GomokuGUI(this);
+		gui = new GomokuGUI(this, humanUser);
 		
 		if(!connectToServer())
 			disconnectFromServer();
@@ -83,10 +72,8 @@ public class GomokuClient extends GomokuProtocol {
 		gui.displayMessage("Connection successful.");
 		
 		try {
-			fromServer = socket.getInputStream();
-			bFrom = new BufferedReader(new InputStreamReader(fromServer));
-			toServer = socket.getOutputStream();
-			bTo = new BufferedWriter(new OutputStreamWriter(toServer));
+			outStream = new PrintWriter(socket.getOutputStream(), true);
+			inStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
 			gui.displayMessage("Error: An error occurred while connecting to server input/output streams.");
 			return false;
@@ -102,13 +89,13 @@ public class GomokuClient extends GomokuProtocol {
 	private void disconnectFromServer() {
 		// disconnect from the server:
 		try {
-			if (fromServer != null) {
-				fromServer.close();
-				fromServer = null;
+			if (outStream != null) {
+				outStream.close();
+				outStream = null;
 			}
-			if (toServer != null) {
-				toServer.close();
-				toServer = null;
+			if (inStream != null) {
+				inStream.close();
+				inStream = null;
 			}
 			if (socket != null) {
 				socket.close();
@@ -126,13 +113,19 @@ public class GomokuClient extends GomokuProtocol {
 		return user;
 	}
 	
-	public void sendChatMessage(String message) {
-		String chatMessage = generateChatMessage(user, message);
+	protected abstract void initializeUserName();
+	
+//	public boolean isMyTurn() {
+//		return myTurn;
+//	}
+	
+	protected void sendChatMessage(String message) {
+		String chatMessage = GomokuProtocol.generateChatMessage(user, message);
 		sendMessage(chatMessage);
 	}
 	
-	public void sendChangeNameMessage(String newName) {
-		String changeNameMessage = generateChangeNameMessage(user, newName);
+	protected void sendChangeNameMessage(String newName) {
+		String changeNameMessage = GomokuProtocol.generateChangeNameMessage(user, newName);
 		sendMessage(changeNameMessage);
 	}
 	
@@ -141,20 +134,34 @@ public class GomokuClient extends GomokuProtocol {
 		messageThread.start();
 	}
 	
-	public void sendGiveupMessage() {
-		String giveupMessage = generateGiveupMessage();
+	protected void sendGiveupMessage() {
+		String giveupMessage = GomokuProtocol.generateGiveupMessage();
 		sendMessage(giveupMessage);
 	}
 	
-	public void sendPlayMessage(GomokuMove move) {
-		boolean black = (move.getColor() == Gomoku.BLACK ? true : false);
-		String playMessage = generatePlayMessage(black, move.getX(), move.getY());
-		sendMessage(playMessage);
+	protected void sendPlayMessage(GomokuMove move) {
+		if (myTurn) {
+			boolean black = (move.getColor() == Gomoku.BLACK ? true : false);
+			String playMessage = GomokuProtocol.generatePlayMessage(black, move.getRow(), move.getColumn());
+			sendMessage(playMessage);
+		}
+		else 
+			gui.displayMessage("It's not your turn.");
 	}
 	
-	public void sendResetMessage() {
-		String resetMessage = generateResetMessage();
+	protected void sendResetMessage() {
+		String resetMessage = GomokuProtocol.generateResetMessage();
 		sendMessage(resetMessage);
+	}
+	
+	public void setUserName(String u) {
+		user = u;
+	}
+	
+	protected void updatePlayerTurn() {
+		myTurn = !myTurn;
+		if (myTurn)
+			gui.displayMessage("It's your turn");
 	}
 	
 	private class MessageSender implements Runnable {
@@ -167,9 +174,13 @@ public class GomokuClient extends GomokuProtocol {
 		
 		@Override
 		public void run() {
-			try {	
-				bTo.write(messageToSend);
-				bTo.flush();
+			try {					
+				if (messageToSend != null) {
+			        outStream.println(messageToSend);
+			    }
+				else
+					throw new IOException();
+				
 			} catch (IOException e) {
 				gui.displayMessage("Error sending message: '" + messageToSend + "'");
 			} catch (NullPointerException e) {
@@ -184,30 +195,50 @@ public class GomokuClient extends GomokuProtocol {
 		public void run() {
 			while (true) {
 				try {
-					String messageReceived = bFrom.readLine();
-					if (isSetBlackColorMessage(messageReceived)) 
+					String messageReceived = inStream.readLine();
+					
+					if (messageReceived == null) 
+						throw new IOException();				
+					else if (GomokuProtocol.isSetBlackColorMessage(messageReceived)) {
 						gui.setColor(Gomoku.BLACK);
-					else if (isSetWhiteColorMessage(messageReceived)) 
+						gui.displayMessage("New game started. Your color is: BLACK");
+						updatePlayerTurn();
+					}
+					else if (GomokuProtocol.isSetWhiteColorMessage(messageReceived)) {
 						gui.setColor(Gomoku.WHITE);
-					else if (isPlayMessage(messageReceived)) {
-						int [] details = getPlayDetail(messageReceived);
+						gui.displayMessage("New game started. Your color is: WHITE");
+					}
+					else if (GomokuProtocol.isPlayMessage(messageReceived)) {
+						int [] details = GomokuProtocol.getPlayDetail(messageReceived);
 						gui.placePieceOnBoard(new GomokuMove(details[0], details[1], details[2]));
+						updatePlayerTurn();
 					}
-					else if (isWinMessage(messageReceived)) {
+					else if (GomokuProtocol.isWinMessage(messageReceived)) {
+						if (!gui.isGameOver()) {
+							gui.displayMessage("You Win!");
+							gui.gameOver();
+							myTurn = false;
+						}
+					}
+					else if (GomokuProtocol.isLoseMessage(messageReceived)) {
+						if (!gui.isGameOver()) {
+							gui.displayMessage("You Lose!");
+							gui.gameOver();
+							myTurn = false;
+						}
+					}
+					else if (GomokuProtocol.isResetMessage(messageReceived)) {
 						// TODO
 					}
-					else if (isLoseMessage(messageReceived)) {
+					else if (GomokuProtocol.isGiveupMessage(messageReceived)) {
 						// TODO
 					}
-					else if (isResetMessage(messageReceived)) {
-						// TODO
-					}
-					else if (isGiveupMessage(messageReceived)) {
-						// TODO
-					}
-					else if (isChatMessage(messageReceived)) {
-						String[] chatMessage = getChatDetail(messageReceived);
+					else if (GomokuProtocol.isChatMessage(messageReceived)) {
+						String[] chatMessage = GomokuProtocol.getChatDetail(messageReceived);
 						gui.displayMessage(chatMessage[0] + ": " + chatMessage[1]);
+					}
+					else if (GomokuProtocol.isChangeNameMessage(messageReceived)) {
+						// TODO
 					}
 					else {
 						throw new ClassNotFoundException();

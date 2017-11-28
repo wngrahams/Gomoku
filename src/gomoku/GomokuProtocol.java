@@ -1,6 +1,5 @@
 package gomoku;
 
-
 public class GomokuProtocol {
     
     private static final String SEPARATOR = "\0";

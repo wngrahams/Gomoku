@@ -35,11 +35,20 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	
 	private int userColor;
 	private String userName;
+	private boolean humanUser;
+	
+	private boolean gameOver = false;
 	
 	private static final String TITLE = "Gomoku - ";
 	
 	public GomokuGUI(GomokuClient gc) {
+		this(gc, false);
+	}
+	
+	public GomokuGUI(GomokuClient gc, boolean human) {
 		super();
+		
+		humanUser = human;
 		
 		userColor = Gomoku.EMPTY;
 		connectedClient = gc;
@@ -53,6 +62,13 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	public void displayMessage(String message) {
 		chatDisplay.append(message + "\n");
 		chatDisplay.setCaretPosition(chatDisplay.getDocument().getLength());
+	}
+	
+	public void gameOver() {
+		gameOver = true;
+		if(humanUser) {
+			gamePanel.removeMouseListener(gamePanel);
+		}
 	}
 	
 	private void initializeChatPanel() {
@@ -78,7 +94,7 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	}
 	
 	private void initializeGamePanel() {
-		gamePanel = new GameBoardPanel(this);
+		gamePanel = new GameBoardPanel(this, humanUser);
 		
 		add(gamePanel, BorderLayout.CENTER);
 	}
@@ -122,10 +138,14 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	    initializeGamePanel();
 	    initializeOptionsPanel();
 	}
+	
+	public boolean isGameOver() {
+		return gameOver;
+	}
 
-	public void makeMove(int x, int y) {
+	public void makeMove(int row, int col) {
 		if (userColor != Gomoku.EMPTY) {
-			GomokuMove move = new GomokuMove(x, y, userColor);
+			GomokuMove move = new GomokuMove(userColor, row, col);
 			connectedClient.sendPlayMessage(move);
 		}
 	}
