@@ -142,7 +142,7 @@ public abstract class GomokuClient implements GomokuProtocol {
 	protected void sendPlayMessage(GomokuMove move) {
 		if (myTurn) {
 			boolean black = (move.getColor() == Gomoku.BLACK ? true : false);
-			String playMessage = GomokuProtocol.generatePlayMessage(black, move.getX(), move.getY());
+			String playMessage = GomokuProtocol.generatePlayMessage(black, move.getRow(), move.getColumn());
 			sendMessage(playMessage);
 		}
 		else 

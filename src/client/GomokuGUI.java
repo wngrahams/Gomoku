@@ -134,9 +134,9 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	    initializeOptionsPanel();
 	}
 
-	public void makeMove(int x, int y) {
+	public void makeMove(int row, int col) {
 		if (userColor != Gomoku.EMPTY) {
-			GomokuMove move = new GomokuMove(userColor, x, y);
+			GomokuMove move = new GomokuMove(userColor, row, col);
 			connectedClient.sendPlayMessage(move);
 		}
 	}

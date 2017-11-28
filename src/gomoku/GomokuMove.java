@@ -3,13 +3,13 @@ package gomoku;
 public class GomokuMove {
 	
 	private int color;
-	private int xPos;
-	private int yPos;
+	private int row;
+	private int column;
 	
-	public GomokuMove(int color, int x, int y) {
+	public GomokuMove(int color, int row, int col) {
 		setColor(color);
-		setX(x);
-		setY(y);
+		setRow(row);
+		setColumn(col);
 	}
 
 	public int getColor() {
@@ -20,19 +20,19 @@ public class GomokuMove {
 		this.color = color;
 	}
 
-	public int getX() {
-		return xPos;
+	public int getColumn() {
+		return column;
+	}
+	
+	public int getRow() {
+		return row;
+	}
+	
+	public void setColumn(int column) {
+		this.column = column;
 	}
 
-	public void setX(int xPos) {
-		this.xPos = xPos;
-	}
-
-	public int getY() {
-		return yPos;
-	}
-
-	public void setY(int yPos) {
-		this.yPos = yPos;
+	public void setRow(int row) {
+		this.row = row;
 	}
 }
