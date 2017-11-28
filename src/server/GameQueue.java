@@ -1,6 +1,5 @@
 package server;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.Stack;
@@ -78,5 +77,9 @@ public class GameQueue<T> {
 		s2.push(output);
 		
 		return output;
+	}
+	
+	public void putBack(T t) {
+		s2.push(t);
 	}
 }

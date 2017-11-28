@@ -76,11 +76,17 @@ public class GomokuServer extends GomokuProtocol {
 	private void makeGamePair() {
 		synchronized (waitingQueue) {
 			ArrayList<ClientThread> pair = waitingQueue.dequeuePair();
-			if (pair != null) {
-				GameManager newGame = new GameManager(pair.get(0), pair.get(1));
-//				newGame.start();
-				
-				activeGames.add(newGame);
+			if (pair != null) {	
+				if (pair.get(0).isConnected() && pair.get(1).isConnected()) {
+					GameManager newGame = new GameManager(pair.get(0), pair.get(1));
+					activeGames.add(newGame);
+				}
+				else {
+					for (ClientThread i : pair) {
+						if (i.isConnected())
+							waitingQueue.putBack(i);
+					}
+				}
 			}
 		}
 	}
@@ -153,6 +159,8 @@ public class GomokuServer extends GomokuProtocol {
 		private String clientMessage;
 		
 		private GameManager currentGame;
+		
+		private boolean connected = false;
 				
 		public ClientThread(Socket s) {
 			super();
@@ -165,6 +173,8 @@ public class GomokuServer extends GomokuProtocol {
 				System.err.println("Error connecting client input/output stream");
 				return;
 			} 
+			
+			connected = true;
 		}
 		
 		protected void close() {
@@ -185,6 +195,16 @@ public class GomokuServer extends GomokuProtocol {
 					System.err.println("Error disconnecting from client socket.");
 				}
 			}
+			
+			connected = false;
+		}
+		
+		public String getUser() {
+			return clientUser;
+		}
+		
+		public boolean isConnected() {
+			return connected;
 		}
 		
 		@Override
@@ -216,10 +236,6 @@ public class GomokuServer extends GomokuProtocol {
 			
 			removeClientFromList(this);
 			close();
-		}
-		
-		public String getUser() {
-			return clientUser;
 		}
 		
 		public boolean sendMessage(String message) {
