@@ -3,6 +3,7 @@ package server;
 import java.util.ArrayList;
 import java.util.Queue;
 
+import gomoku.Gomoku;
 import gomoku.GomokuMove;
 
 import java.io.BufferedReader;
@@ -45,7 +46,7 @@ public class GomokuServer {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
+		GomokuServer server;
 	}
 	
 	
@@ -57,6 +58,7 @@ public class GomokuServer {
 	{
 		this.port = port;
 		threadList = new ArrayList<ClientThread>();
+		currentGames = new ArrayList<GameThread>();
 		startServer();
 	}
 	
@@ -80,9 +82,8 @@ public class GomokuServer {
 					
 					if(threadList.size()%2 != 0)
 					{
-						/*
-						 * odd # of players, waiting message
-						 */
+						//odd # of players, waiting message
+						 
 					}
 					else
 					{
@@ -138,6 +139,8 @@ public class GomokuServer {
 		
 		String message;
 		
+		GameThread latestMove;
+		
 		boolean isPlayMessage = false;
 		
 		public ClientThread(Socket s) {
@@ -150,7 +153,7 @@ public class GomokuServer {
 				send = s.getOutputStream();
 				buffWriter = new BufferedWriter( new OutputStreamWriter(send));
 				
-				message = buffReader.readLine();
+				//message = buffReader.readLine();
 
 			} catch(Exception e) {
 				return;
@@ -205,11 +208,8 @@ public class GomokuServer {
 					int xMove = coordinates[0];
 					int yMove = coordinates[1];
 					int color = coordinates[3];
-//					if(color == 0)
-//					{
-//						
-//					}
-					GomokuMove latestMove = new GomokuMove(xMove, yMove, color);
+
+					latestMove = new GomokuMove(xMove, yMove, color);
 					
 					//need to get this move to GameThread class
 				}
@@ -246,10 +246,7 @@ public class GomokuServer {
 
 	
 	private class GameThread extends Thread{
-		
-		private Socket player1;
-		private Socket player2;
-		
+
 		BufferedReader buffReader;
 		BufferedWriter buffWriter;
 		
@@ -258,25 +255,47 @@ public class GomokuServer {
 		
 		private int[] gameBoard;
 		
-//		private ClientThread player1Thread;
-//		private ClientThread player2Thread;
+		private ClientThread player1Thread;
+		private ClientThread player2Thread;
 		
 		private ArrayList<GomokuMove> currentBoard;
 		
-		private GameThread(Socket p1, Socket p2) {
-			player1 = p1;
-			player2 = p2;
-			
+		private int[][] gameState = new int[15][15];
+
+		private GameThread(ClientThread p1, ClientThread p2)
+		{
+			player1Thread = p1;
+			player2Thread = p2;
 		}
-		
-//		private GameThread(ClientThread p1, ClientThread p2)
-//		{
-//			player1Thread = p1;
-//			player2Thread = p2;
-//		}
 		
 		public boolean checkStatus() {
 			boolean stillGoing = false;
+			
+			//TODO: after addNewMove, check if either color has 5 pieces in a row
+			
+			/*
+			 * for every square, check x+1, x-1, y+1, y-1, (x+1, y-1); (x+1, y+1); (x-1, y-1); (x-1, y+1)
+			 * if color = color counter++, and repeat for that location
+			 */
+			int counter = 0;
+			
+			int[][] tempLoc = new int[1][1];
+			
+			for(int i = 0; i<15; i++){
+				for(int j = 0; j<15; j++)
+				{
+					//tempLoc[0][0] = gameState[i][j];
+					
+					if(gameState[i][j] != Gomoku.EMPTY)
+					{
+						counter++;
+						if(gameState[i+1][j] == Gomoku.BLACK || gameState[i-1][j] == Gomoku.BLACK)
+						{
+							counter++;
+						}
+					}
+				}
+			}
 			
 			return stillGoing;
 		}
