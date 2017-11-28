@@ -35,11 +35,18 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	
 	private int userColor;
 	private String userName;
+	private boolean humanUser;
 	
 	private static final String TITLE = "Gomoku - ";
 	
 	public GomokuGUI(GomokuClient gc) {
+		this(gc, false);
+	}
+	
+	public GomokuGUI(GomokuClient gc, boolean human) {
 		super();
+		
+		humanUser = human;
 		
 		userColor = Gomoku.EMPTY;
 		connectedClient = gc;
@@ -78,7 +85,7 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	}
 	
 	private void initializeGamePanel() {
-		gamePanel = new GameBoardPanel(this);
+		gamePanel = new GameBoardPanel(this, humanUser);
 		
 		add(gamePanel, BorderLayout.CENTER);
 	}
