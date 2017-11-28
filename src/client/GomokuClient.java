@@ -11,7 +11,7 @@ import gomoku.Gomoku;
 import gomoku.GomokuMove;
 import gomoku.GomokuProtocol;
 
-public abstract class GomokuClient implements GomokuProtocol {
+public abstract class GomokuClient {
 	
 	protected GomokuGUI gui;
 	
@@ -214,12 +214,18 @@ public abstract class GomokuClient implements GomokuProtocol {
 						updatePlayerTurn();
 					}
 					else if (GomokuProtocol.isWinMessage(messageReceived)) {
-						gui.displayMessage("You Win!");
-						myTurn = false;
+						if (!gui.isGameOver()) {
+							gui.displayMessage("You Win!");
+							gui.gameOver();
+							myTurn = false;
+						}
 					}
 					else if (GomokuProtocol.isLoseMessage(messageReceived)) {
-						gui.displayMessage("You Lose!");
-						myTurn = false;
+						if (!gui.isGameOver()) {
+							gui.displayMessage("You Lose!");
+							gui.gameOver();
+							myTurn = false;
+						}
 					}
 					else if (GomokuProtocol.isResetMessage(messageReceived)) {
 						// TODO
