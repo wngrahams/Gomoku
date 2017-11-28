@@ -17,7 +17,7 @@ public class HumanClient extends GomokuClient {
 				cc = new HumanClient(args[0], portInt);
 			} catch (NumberFormatException e) {
 				System.out.println("Usage: java GomokuClient <hostname> <port_number>");
-				System.out.println("Port number should be an integer less than " + 0xFFFF);
+				System.out.println("Port number should be an integer less than " + DEFAULT_PORT);
 			}
 		}
 	}

@@ -44,6 +44,10 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 			addMouseListener(this);
 	}
 	
+	public int[][] getGameState() {
+		return gameState;
+	}
+	
 	public void resetBoard() {
 		for (int i=0; i<15; i++) {
 			for (int j=0; j<15; j++) {

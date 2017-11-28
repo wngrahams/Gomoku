@@ -62,6 +62,10 @@ public class GomokuGUI extends JFrame implements ActionListener {
 		chatDisplay.setCaretPosition(chatDisplay.getDocument().getLength());
 	}
 	
+//	public int getColor() {
+//		return userColor;
+//	}
+	
 	private void initializeChatPanel() {
 		chatPanel = new JPanel(new BorderLayout());
 		
