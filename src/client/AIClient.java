@@ -2,6 +2,8 @@ package client;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import gomoku.GomokuMove;
+
 public class AIClient extends GomokuClient {
 	
 	@SuppressWarnings("unused")
@@ -35,7 +37,15 @@ public class AIClient extends GomokuClient {
 	}
 	
 	private void calculateNextMove() {
-		System.out.println("calculating...");
+		boolean sendSuccess = false;
+		int randRow = ThreadLocalRandom.current().nextInt(0, 15);
+		int randCol = ThreadLocalRandom.current().nextInt(0, 15);
+		GomokuMove move = new GomokuMove(userColor, randRow, randCol);
+		
+		while(!sendSuccess) {
+			System.out.println("calculating...");
+			sendSuccess = sendPlayMessage(move);
+		}
 	}
 	
 	@Override
@@ -53,6 +63,7 @@ public class AIClient extends GomokuClient {
 	protected void updatePlayerTurn() {
 		super.updatePlayerTurn();
 		
-		calculateNextMove();
+		if(myTurn)
+			calculateNextMove();
 	}
 }

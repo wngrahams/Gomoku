@@ -213,6 +213,7 @@ public class GomokuServer {
 			while (clientRun) {
 				try {
 					clientMessage = in.readLine();
+					System.out.println("server received: " + clientMessage);
 					if (clientMessage == null) 
 						throw new IOException();					
 					else if (GomokuProtocol.isPlayMessage(clientMessage)) {
@@ -255,6 +256,7 @@ public class GomokuServer {
 				if (message == null) 
 					throw new IOException();	
 					
+				System.out.println("Server sending: " + message);
 				out.println(message);
 				
 			} catch (IOException e) {
