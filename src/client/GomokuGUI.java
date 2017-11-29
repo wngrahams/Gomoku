@@ -154,6 +154,10 @@ public class GomokuGUI extends JFrame implements ActionListener {
 		gamePanel.drawPiece(move);
 	}
 	
+	public void resetBoard() {
+		gamePanel.resetBoard();
+	}
+	
 	public void setColor(int color) {
 		userColor = color;
 		updateTitle();
