@@ -17,12 +17,15 @@ public class Gomoku {
 			return "";
 	}
 	
-	public static int[] isGameOver(int[][] gameState) {
+	public static int[] isGameOver(int[][] gameState, int[] latestMove) {
 		if (gameState.length != 15 || gameState[0].length != 15)
 			throw new RuntimeException("Game must be 15x15");
 		
-		for (int i=0; i<15; i++) {
-			for (int j=0; j<15; j++) {
+		int i = latestMove[1];
+		int j = latestMove[2];
+//		
+//		for (int i=0; i<15; i++) {
+//			for (int j=0; j<15; j++) {
 				if (gameState[i][j] != EMPTY) {
 					int potentialWinner = gameState[i][j];
 
@@ -41,9 +44,25 @@ public class Gomoku {
 					// check diagonal down and left
 					if(checkDownAndLeft(gameState, 5, potentialWinner, i, j))
 						return new int[] {GAME_OVER, potentialWinner};
+					
+					// check left
+					if(checkLeft(gameState, 5, potentialWinner, i, j))
+						return new int[] {GAME_OVER, potentialWinner};
+					
+					// check diagonal up and left
+					if(checkUpandLeft(gameState, 5, potentialWinner, i, j))
+						return new int[] {GAME_OVER, potentialWinner};
+					
+					// check vertical up 
+					if(checkUp(gameState, 5, potentialWinner, i, j))
+						return new int[] {GAME_OVER, potentialWinner};
+					
+					// check diagonal up and right
+					if(checkUpandRight(gameState, 5, potentialWinner, i, j))
+						return new int[] {GAME_OVER, potentialWinner};
 				}
-			}
-		}
+//			}
+//		}
 		
 		return new int[] {GAME_NOT_OVER, EMPTY};
 	}
@@ -103,4 +122,65 @@ public class Gomoku {
 		else
 			return false;
 	}
+	
+	private static boolean checkLeft(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
+		amtToWin--;
+		if(amtToWin<= 0)
+			return true;
+		if((startCol+1) < 15) {
+			if(gameState[startCol -1][startRow] == color)
+				return checkLeft(gameState, amtToWin, color, startCol-1, startRow);
+			else
+				return false;
+		}
+		else
+			return false;
+	}
+	
+	private static boolean checkUpandLeft(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
+		amtToWin--;
+		if(amtToWin<=0)
+			return true;
+		if((startCol-1) >= 0 || (startRow+1) <= 15) {
+			if(gameState[startCol-1][startRow] == color)
+				return checkUpandLeft(gameState, amtToWin, color, startCol-1, startRow+1);
+			else
+				return false;
+			
+		}
+		else
+			return false;
+			
+	}
+	
+	private static boolean checkUp(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
+		amtToWin--;
+		if(amtToWin<=0)
+			return true;
+		if((startRow+1) < 15) {
+			if(gameState[startCol][startRow+1] == color)
+				return checkUpandLeft(gameState, amtToWin, color, startCol, startRow+1);
+			else
+				return false;
+			
+		}
+		else
+			return false;
+	}
+	
+	private static boolean checkUpandRight(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
+		amtToWin--;
+		if(amtToWin<=0)
+			return true;
+		if((startRow+1) < 15 && (startCol+1) < 15) {
+			if(gameState[startCol+1][startRow+1] == color)
+				return checkUpandLeft(gameState, amtToWin, color, startCol+1, startRow+1);
+			else
+				return false;
+			
+		}
+		else
+			return false;
+	}
+	
 }
