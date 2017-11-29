@@ -2,9 +2,12 @@ package client;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import gomoku.Gomoku;
 import gomoku.GomokuMove;
 
 public class AIClient extends GomokuClient {
+	
+	private int piecesPlayed = -1;
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
@@ -38,14 +41,26 @@ public class AIClient extends GomokuClient {
 	
 	private void calculateNextMove() {
 		boolean sendSuccess = false;
-		int randRow = ThreadLocalRandom.current().nextInt(0, 15);
-		int randCol = ThreadLocalRandom.current().nextInt(0, 15);
-		GomokuMove move = new GomokuMove(userColor, randRow, randCol);
+		GomokuMove move;
 		
-		while(!sendSuccess) {
-			System.out.println("calculating...");
+		int randRow;
+		int randCol;
+		
+		if (gameState[7][7] == Gomoku.EMPTY) {
+			move = new GomokuMove(userColor, 7, 7);
 			sendSuccess = sendPlayMessage(move);
 		}
+		else {
+			while(!sendSuccess) {
+				System.out.println("calculating...");
+				randRow = ThreadLocalRandom.current().nextInt(0, 15);
+				randCol = ThreadLocalRandom.current().nextInt(0, 15);
+				move = new GomokuMove(userColor, randRow, randCol);
+				sendSuccess = sendPlayMessage(move);
+			}
+		}
+		
+		
 	}
 	
 	@Override
@@ -65,5 +80,7 @@ public class AIClient extends GomokuClient {
 		
 		if(myTurn)
 			calculateNextMove();
+		
+		piecesPlayed++;
 	}
 }
