@@ -23,19 +23,24 @@ public class AIClient extends GomokuClient {
 	}
 
 	public AIClient() {
-		super(false);
+		super();
 	}
 	
 	public AIClient(int port) {
-		super("localhost", port, false);
+		super(port);
 	}
 	
 	public AIClient(String ip, int port) {
-		super(ip, port, false);
+		super(ip, port);
 	}
 	
 	private void calculateNextMove() {
-		
+		System.out.println("calculating...");
+	}
+	
+	@Override
+	protected void initializeGUI() {
+		gui = new GomokuGUI(this, false);
 	}
 
 	@Override
@@ -46,9 +51,7 @@ public class AIClient extends GomokuClient {
 	
 	@Override
 	protected void updatePlayerTurn() {
-		myTurn = !myTurn;
-		if (myTurn)
-			gui.displayMessage("It's your turn");
+		super.updatePlayerTurn();
 		
 		calculateNextMove();
 	}

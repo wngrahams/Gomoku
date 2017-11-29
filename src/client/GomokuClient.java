@@ -23,35 +23,24 @@ public abstract class GomokuClient {
     private BufferedReader inStream;
     
     private String user;
-    private boolean humanUser = false;
     protected boolean myTurn = false;
     
     protected static final int DEFAULT_PORT = 0xFFFF;
 	
 	public GomokuClient() {
-		this("localhost", DEFAULT_PORT, false);
+		this("localhost", DEFAULT_PORT);
 	}
 	
 	public GomokuClient(int port) {
-		this(port, false);
+		this("localhost", port);
 	}
 	
-	public GomokuClient(boolean human) {
-		this(DEFAULT_PORT, human);
-	}
-	
-	public GomokuClient(int port, boolean human) {
-		this("localhost", port, human);
-	}
-	
-	public GomokuClient(String ip, int port, boolean human) {
+	public GomokuClient(String ip, int port) {
 		serverIP = ip;
 		serverPort = port;
-		humanUser = human;
 		
 		initializeUserName();
-		
-		gui = new GomokuGUI(this, humanUser);
+		initializeGUI();
 		
 		if(!connectToServer())
 			disconnectFromServer();
@@ -112,6 +101,8 @@ public abstract class GomokuClient {
 	public String getUserName() {
 		return user;
 	}
+	
+	protected abstract void initializeGUI();
 	
 	protected abstract void initializeUserName();
 	
