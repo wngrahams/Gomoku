@@ -1,5 +1,8 @@
 package gomoku;
 
+import java.util.ArrayList;
+import java.util.PriorityQueue;
+
 public class Gomoku {
 	public static final int EMPTY = 0b11111111111111111111111111111111;
 	public static final int WHITE = 0b00;
@@ -102,5 +105,128 @@ public class Gomoku {
 		}
 		else
 			return false;
+	}
+
+//	public static ArrayList<GomokuMove> findFours(int[][] gameState, int otherColor) {
+//		ArrayList<GomokuMove> fours = new ArrayList<GomokuMove>();
+//		ArrayList<GomokuMove> potentialFours = new ArrayList<GomokuMove>();
+//		for (int i=0; i<15)
+//		return null;
+//	}
+	
+	public static PriorityQueue<Threat> findThreats(int[][] gameState, int otherColor) {
+		PriorityQueue<Threat> threats = new PriorityQueue<Threat>();
+		for (int i=0; i<15; i++) {
+			for (int j=0; j<15; j++) {
+				if (gameState[i][j] == otherColor) {
+					Threat downThreat = getThreatDown(gameState, otherColor, new GomokuMove(otherColor, i, j));
+					Threat downLeftThreat = getThreatDownLeft(gameState, otherColor, new GomokuMove(otherColor, i, j));
+					Threat downRightThreat = getThreatDownRight(gameState, otherColor, new GomokuMove(otherColor, i, j));
+					Threat rightThreat = getThreatRight(gameState, otherColor, new GomokuMove(otherColor, i, j));
+
+					threats.add(downThreat);
+					threats.add(downLeftThreat);
+					threats.add(downRightThreat);
+					threats.add(rightThreat);
+				}
+			}
+		}
+		
+		return threats;
+	}
+	
+	private static Threat getThreatDown(int[][] gameState, int color, GomokuMove startingPos) {
+		
+		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
+		int threatSize = getAmtDown(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		
+		down.add(startingPos);
+		for (int i=1; i<threatSize; i++) {
+			down.add(new GomokuMove(color, startingPos.getRow()+i, startingPos.getColumn()));
+		}
+		
+		Threat threat = new Threat(down, Threat.VERTICAL);
+		return threat;
+	}
+	
+	private static int getAmtDown(int[][] gameState, int color, int startRow, int startCol) {
+		if (gameState[startRow + 1][startCol] == color)
+			return 1 + getAmtDown(gameState, color, startRow+1, startCol);
+		else
+			return 0;
+	}
+	
+	private static Threat getThreatDownLeft(int[][] gameState, int color, GomokuMove startingPos) {
+		
+		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
+		int threatSize = getAmtDownLeft(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		
+		down.add(startingPos);
+		for (int i=1; i<threatSize; i++) {
+			down.add(new GomokuMove(color, startingPos.getRow()+i, startingPos.getColumn()-i));
+		}
+		
+		Threat threat = new Threat(down, Threat.UP_RIGHT);
+		return threat;
+	}
+	
+	private static int getAmtDownLeft(int[][] gameState, int color, int startRow, int startCol) {
+		if (gameState[startRow + 1][startCol] == color)
+			return 1 + getAmtDownLeft(gameState, color, startRow+1, startCol-1);
+		else
+			return 0;
+	}
+	
+	private static Threat getThreatDownRight(int[][] gameState, int color, GomokuMove startingPos) {
+		
+		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
+		int threatSize = getAmtDownRight(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		
+		down.add(startingPos);
+		for (int i=1; i<threatSize; i++) {
+			down.add(new GomokuMove(color, startingPos.getRow()+i, startingPos.getColumn()+i));
+		}
+		
+		Threat threat = new Threat(down, Threat.DOWN_RIGHT);
+		return threat;
+	}
+	
+	private static int getAmtDownRight(int[][] gameState, int color, int startRow, int startCol) {
+		if (gameState[startRow + 1][startCol] == color)
+			return 1 + getAmtDownRight(gameState, color, startRow+1, startCol+1);
+		else
+			return 0;
+	}
+	
+	private static Threat getThreatRight(int[][] gameState, int color, GomokuMove startingPos) {
+		
+		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
+		int threatSize = getAmtRight(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		
+		down.add(startingPos);
+		for (int i=1; i<threatSize; i++) {
+			down.add(new GomokuMove(color, startingPos.getRow(), startingPos.getColumn()+i));
+		}
+		
+		Threat threat = new Threat(down, Threat.HORIZONTAL);
+		return threat;
+	}
+	
+	private static int getAmtRight(int[][] gameState, int color, int startRow, int startCol) {
+		if (gameState[startRow + 1][startCol] == color)
+			return 1 + getAmtRight(gameState, color, startRow, startCol+1);
+		else
+			return 0;
+	}
+	
+	public static GomokuMove respondToThreat(int[][] gameState, Threat t, int otherColor) {
+		ArrayList<GomokuMove> costSquares = t.getCostSquares();
+		for (int i=0; i<costSquares.size(); i++) {
+			// TODO: inefficient: why return a cost square if it's already filled
+			if (gameState[costSquares.get(i).getRow()][costSquares.get(i).getColumn()] == EMPTY)
+				return costSquares.get(i);
+		}
+		
+		return null;
 	}
 }
