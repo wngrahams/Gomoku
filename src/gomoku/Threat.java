@@ -50,10 +50,10 @@ public class Threat implements Comparable<Threat> {
 				}
 				
 				if (upMost - 1 > -1) {  // need to consider a four that is touching another ?
-					costSquares.add(new GomokuMove((components.get(0).getColor()-1)*(-1), upMost-1, components.get(0).getRow()));
+					costSquares.add(new GomokuMove((components.get(0).getColor()-1)*(-1), upMost-1, components.get(0).getColumn()));
 				}
 				if (downMost + 1 < 15) {
-					costSquares.add(new GomokuMove((components.get(0).getColor()-1)*(-1), downMost+1, components.get(0).getRow()));
+					costSquares.add(new GomokuMove((components.get(0).getColor()-1)*(-1), downMost+1, components.get(0).getColumn()));
 				}
 			}
 			else if (threatType == UP_RIGHT || threatType == DOWN_RIGHT) {

@@ -57,13 +57,7 @@ public class AIClient extends GomokuClient {
 			sendSuccess = sendPlayMessage(move);
 		}
 		else {
-//			while(!sendSuccess) {
-//				System.out.println("calculating...");
-//				randRow = ThreadLocalRandom.current().nextInt(0, 15);
-//				randCol = ThreadLocalRandom.current().nextInt(0, 15);
-//				move = new GomokuMove(userColor, randRow, randCol);
-//				sendSuccess = sendPlayMessage(move);
-//			}
+
 			move = playNecessaryDefense();  // gonna be real slow
 			if (move != null) {
 				sendPlayMessage(move);
@@ -112,9 +106,7 @@ public class AIClient extends GomokuClient {
 		Threat highestPriority = threats.poll();
 		if (highestPriority == null) {
 //			throw new RuntimeException("No move found");
-			int randRow = ThreadLocalRandom.current().nextInt(0, 15);
-			int randCol = ThreadLocalRandom.current().nextInt(0, 15);
-			return new GomokuMove(userColor, randRow, randCol);
+			return pickFromMiddle();
 		}
 		else {
 			GomokuMove moveToPlay = Gomoku.respondToThreat(gameState, highestPriority, userColor);
@@ -132,6 +124,24 @@ public class AIClient extends GomokuClient {
 		}
 	}
 	
+	private GomokuMove pickFromMiddle() {
+		if (gameState[7][7] == Gomoku.EMPTY)
+			return new GomokuMove(userColor, 7, 7);
+		else {
+			GomokuMove chosenMove;
+			int counter = 0;
+			
+			do {
+				counter++;
+				int randRow = ThreadLocalRandom.current().nextInt(6 - counter/8, 9 + counter/8);
+				int randCol = ThreadLocalRandom.current().nextInt(6 - counter/8, 9 + counter/8);
+				chosenMove = new GomokuMove(userColor, randRow, randCol);
+			} while (gameState[chosenMove.getRow()][chosenMove.getColumn()] != Gomoku.EMPTY);
+			
+			return chosenMove;
+		}
+	}
+	
 	@Override
 	protected void initializeGUI() {
 		gui = new GomokuGUI(this, false);
@@ -141,6 +151,17 @@ public class AIClient extends GomokuClient {
 	protected void initializeUserName() {
 		int rand = ThreadLocalRandom.current().nextInt(1, 100000);
 		setUserName("AI" + Integer.toString(rand));
+	}
+	
+	@Override
+	protected boolean sendPlayMessage(GomokuMove move) {
+		try {
+			Thread.sleep(250);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return super.sendPlayMessage(move);
 	}
 	
 	@Override
