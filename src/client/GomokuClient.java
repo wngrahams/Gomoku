@@ -20,7 +20,7 @@ public abstract class GomokuClient {
 	private int serverPort;
 	
 	private PrintWriter outStream;
-    private BufferedReader inStream;
+    private BufferedReader inStream; 
     
     private String user;
     protected int userColor = Gomoku.EMPTY;
@@ -237,17 +237,25 @@ public abstract class GomokuClient {
 						}
 					}
 					else if (GomokuProtocol.isResetMessage(messageReceived)) {
-						// TODO
+						gui.resetBoard();
 					}
 					else if (GomokuProtocol.isGiveupMessage(messageReceived)) {
-						// TODO
+						if (!gui.isGameOver()) {
+							gui.displayMessage("You Win By Forfeit!");
+							gui.gameOver();
+							myTurn = false;
+						}
 					}
 					else if (GomokuProtocol.isChatMessage(messageReceived)) {
 						String[] chatMessage = GomokuProtocol.getChatDetail(messageReceived);
 						gui.displayMessage(chatMessage[0] + ": " + chatMessage[1]);
 					}
 					else if (GomokuProtocol.isChangeNameMessage(messageReceived)) {
-						// TODO
+						String[] tokens = GomokuProtocol.getChangeNameDetail(messageReceived);
+						if(user.equals(tokens[0]))
+						{
+							setUserName(tokens[1]);
+						}
 					}
 					else {
 						throw new ClassNotFoundException();

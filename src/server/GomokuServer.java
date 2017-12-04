@@ -18,6 +18,9 @@ public class GomokuServer {
 	private boolean keepRunning;
 	
 	private static final int DEFAULT_PORT = 0xFFFF;
+	private static final int GAMEOVER_GIVEUP = 0;
+	private static final int GAMEOVER_COMPLETE = 1;
+	private static final int GAMEOVER_DISCONNECT = 2;
 	
 	// An ArrayList to keep track of all connected clients
 	private ArrayList<ClientThread> threadList = new ArrayList<ClientThread>();
@@ -72,7 +75,7 @@ public class GomokuServer {
 			return true;
 		}
 	}
-	
+
 	private void makeGamePair() {
 		synchronized (waitingQueue) {
 			ArrayList<ClientThread> pair = waitingQueue.dequeuePair();
@@ -169,6 +172,7 @@ public class GomokuServer {
 			try {
 				out = new PrintWriter(clientSocket.getOutputStream(), true);
 		        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		        //System.out.println("inside new clientthread(constructor), stream = " + in.readLine());
 			} catch (IOException e) {
 				System.err.println("Error connecting client input/output stream");
 				return;
@@ -230,13 +234,24 @@ public class GomokuServer {
 						else
 							sendMessage(clientMessage);
 					}
+					else if (GomokuProtocol.isChangeNameMessage(clientMessage)) {
+						if(currentGame != null)
+							currentGame.processNameChangeMessage(clientMessage);
+					}
+					else if (GomokuProtocol.isGiveupMessage(clientMessage)) {
+						if(currentGame != null)
+							currentGame.processGiveupMessage(clientMessage, this);
+					}
+					else if(GomokuProtocol.isResetMessage(clientMessage)) {
+						if(currentGame != null)
+							currentGame.processResetMessage(clientMessage);
+					}
 					
 				} catch (IOException e) {
 					// user has disconnected
 					System.err.println("User has disconnected");
 					if (currentGame != null)
-						currentGame.setLoser(this);
-					
+						currentGame.setLoser(this, GAMEOVER_DISCONNECT);
 					break;
 				}
 			}
@@ -322,9 +337,15 @@ public class GomokuServer {
 				gameState[info[1]][info[2]] = info[0];
 				black.sendMessage(playMessage);
 				white.sendMessage(playMessage);
-				int[] results = Gomoku.isGameOver(gameState);
-				if (results[0] == Gomoku.GAME_OVER) {
-					setWinner(results[1]);
+//				int[] results = Gomoku.isGameOver(gameState);
+//				if (results[0] == Gomoku.GAME_OVER) {
+//					setWinner(results[1], GAMEOVER_COMPLETE);
+//				}
+				int[]latestMove = new int[3];
+				latestMove = info;
+				int[] results2 = Gomoku.isGameOver(gameState, latestMove);
+				if(results2[0] == Gomoku.GAME_OVER) {
+					setWinner(results2[1], GAMEOVER_COMPLETE);
 				}
 			}
 			else {
@@ -335,43 +356,80 @@ public class GomokuServer {
 			}
 		}
 		
+		public void processNameChangeMessage(String nameMessage) {
+			String[] tokens = GomokuProtocol.getChangeNameDetail(nameMessage);
+			if(checkNameAvailable(tokens[1])) {
+					black.sendMessage(nameMessage);
+					white.sendMessage(nameMessage);
+			}
+			
+		}
+		
+		public void processGiveupMessage(String giveupMessage, ClientThread loser) {
+			setLoser(loser, GAMEOVER_GIVEUP);
+		}
+		
+		public void processResetMessage(String resetMessage) {
+			black.sendMessage(resetMessage);
+			white.sendMessage(resetMessage);
+			for (int i=0; i<15; i++) {
+				for (int j=0; j<15; j++)
+					gameState[i][j] = Gomoku.EMPTY;
+			}
+		}
+		
 		public void setBlack(ClientThread black) {
 			this.black = black;
 		}
 		
-		public void setLoser(ClientThread loser) {
+		public void setLoser(ClientThread loser, int type) {
 			if (loser == black) {
-				setResults(white, black);
+				setResults(white, black, type);
 			}
 			else if (loser == white) {
-				setResults(black, white);
+				setResults(black, white, type);
 			}
 		}
 		
-		private void setResults(ClientThread winner, ClientThread loser) {
-			winner.sendMessage(GomokuProtocol.generateWinMessage());
-			loser.sendMessage(GomokuProtocol.generateLoseMessage());
+
+		private void setResults(ClientThread winner, ClientThread loser, int type) {
+			if(type == GAMEOVER_GIVEUP)
+			{
+				winner.sendMessage(GomokuProtocol.generateGiveupMessage());
+				loser.sendMessage(GomokuProtocol.generateLoseMessage());
+			}
+			else if(type == GAMEOVER_COMPLETE)
+			{
+				winner.sendMessage(GomokuProtocol.generateWinMessage());
+				loser.sendMessage(GomokuProtocol.generateLoseMessage());
+			}
+			else if(type == GAMEOVER_DISCONNECT)
+			{
+				//TODO: add "win by disconnect" messages if we want them
+				winner.sendMessage(GomokuProtocol.generateWinMessage());
+				loser.sendMessage(GomokuProtocol.generateLoseMessage());
+			}
 		}
 
 		public void setWhite(ClientThread white) {
 			this.white = white;
 		}
 		
-		public void setWinner(ClientThread winner) {
+		public void setWinner(ClientThread winner, int type) {
 			if (winner == black) {
-				setResults(black, white);
+				setResults(black, white, type);
 			}
 			else if (winner == white) {
-				setResults(white, black);
+				setResults(white, black,type);
 			}
 		}
 		
-		public void setWinner(int winner) {
+		public void setWinner(int winner, int type) {
 			if (winner == Gomoku.BLACK) {
-				setWinner(black);
+				setWinner(black, type);
 			}
 			else if (winner == Gomoku.WHITE) {
-				setWinner(white);
+				setWinner(white, type);
 			}
 		}
 	}

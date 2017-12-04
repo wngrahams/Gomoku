@@ -16,7 +16,7 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 	private boolean humanUser;
 	private GomokuGUI connectedFrame;
 	
-	private int[][] gameState = new int[15][15];
+	private int[][] gameState = new int[15][15]; 
 	
 	public GameBoardPanel(GomokuGUI g) {
 		this(g, false);

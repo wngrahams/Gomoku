@@ -106,7 +106,7 @@ public class Gomoku {
 		else
 			return false;
 	}
-
+  
 //	public static ArrayList<GomokuMove> findFours(int[][] gameState, int otherColor) {
 //		ArrayList<GomokuMove> fours = new ArrayList<GomokuMove>();
 //		ArrayList<GomokuMove> potentialFours = new ArrayList<GomokuMove>();
