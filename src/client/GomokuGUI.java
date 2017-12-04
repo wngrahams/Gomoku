@@ -76,7 +76,6 @@ public class GomokuGUI extends JFrame implements ActionListener {
 		
 		chatDisplay = new JTextArea();
 	    chatDisplay.setEditable(false);
-	    chatDisplay.setPreferredSize(new Dimension(250, 300));
 	    JScrollPane textScrollPane = new JScrollPane(chatDisplay);
 	    
 	    JPanel typingPanel = new JPanel(new BorderLayout());
