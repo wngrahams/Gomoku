@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javax.management.RuntimeErrorException;
 
+import gomoku.BoardEvaluator;
 import gomoku.Gomoku;
 import gomoku.GomokuMove;
 import gomoku.Threat;
@@ -46,100 +47,13 @@ public class AIClient extends GomokuClient {
 	}
 	
 	private void calculateNextMove() {
-		boolean sendSuccess = false;
-		GomokuMove move;
 		
-		int randRow;
-		int randCol;
-		
-		if (piecesPlayed < 2 && gameState[7][7] == Gomoku.EMPTY) {
-			move = new GomokuMove(userColor, 7, 7);
-			sendSuccess = sendPlayMessage(move);
-		}
-		else {
-
-			move = playNecessaryDefense();  // gonna be real slow
-			if (move != null) {
-				sendPlayMessage(move);
-				return;
-			}
-			else {
-				move = playOffense();
-				sendPlayMessage(move);
-				return;
-			}
-			
+		BoardEvaluator eval = new BoardEvaluator(gameState, userColor);
+		GomokuMove moveToPlay = eval.evaluateBoard().poll();
+		if (moveToPlay != null) {
+			sendPlayMessage(moveToPlay);
 		}
 		
-		
-	}
-
-	private GomokuMove playNecessaryDefense() {
-		PriorityQueue<Threat> threats = Gomoku.findThreats(gameState, otherColor);
-		Threat highestPriority = threats.poll();
-		if (highestPriority == null) {
-			return null;
-		}
-		else {
-			if (highestPriority.threatSize < 3)
-				return null;
-			else {
-				GomokuMove moveToPlay = Gomoku.respondToThreat(gameState, highestPriority, otherColor);
-				while (moveToPlay == null && highestPriority.threatSize > 2) {
-					highestPriority = threats.poll();
-					moveToPlay = Gomoku.respondToThreat(gameState, highestPriority, otherColor);
-				}
-				if (moveToPlay == null) {
-					return null;
-				}
-				else {
-					GomokuMove defenseMove = new GomokuMove(userColor, moveToPlay.getRow(), moveToPlay.getColumn());
-					return defenseMove;
-//					return moveToPlay;
-				}
-			}
-		}
-	}
-	
-	private GomokuMove playOffense() {
-		PriorityQueue<Threat> threats = Gomoku.findThreats(gameState, userColor);
-		Threat highestPriority = threats.poll();
-		if (highestPriority == null) {
-//			throw new RuntimeException("No move found");
-			return pickFromMiddle();
-		}
-		else {
-			GomokuMove moveToPlay = Gomoku.respondToThreat(gameState, highestPriority, userColor);
-			while (moveToPlay == null) {
-				highestPriority = threats.poll();
-				if (highestPriority == null) {
-					throw new RuntimeException("Nothing found");
-				}
-				moveToPlay = Gomoku.respondToThreat(gameState, highestPriority, userColor);
-			}
-			
-			GomokuMove offenseMove = new GomokuMove(userColor, moveToPlay.getRow(), moveToPlay.getColumn());
-			return offenseMove;
-//			return moveToPlay;
-		}
-	}
-	
-	private GomokuMove pickFromMiddle() {
-		if (gameState[7][7] == Gomoku.EMPTY)
-			return new GomokuMove(userColor, 7, 7);
-		else {
-			GomokuMove chosenMove;
-			int counter = 0;
-			
-			do {
-				counter++;
-				int randRow = ThreadLocalRandom.current().nextInt(6 - counter/8, 9 + counter/8);
-				int randCol = ThreadLocalRandom.current().nextInt(6 - counter/8, 9 + counter/8);
-				chosenMove = new GomokuMove(userColor, randRow, randCol);
-			} while (gameState[chosenMove.getRow()][chosenMove.getColumn()] != Gomoku.EMPTY);
-			
-			return chosenMove;
-		}
 	}
 	
 	@Override
