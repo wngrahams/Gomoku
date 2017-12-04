@@ -263,9 +263,9 @@ public abstract class GomokuClient {
 					}
 					else if (GomokuProtocol.isChangeNameMessage(messageReceived)) {
 						String[] tokens = GomokuProtocol.getChangeNameDetail(messageReceived);
-						if(user.equals(tokens[0]))
-						{
+						if(user.equals(tokens[0])) {
 							setUserName(tokens[1]);
+							gui.updateUserName(tokens[1]);
 						}
 					}
 					else {

@@ -169,6 +169,7 @@ public class GomokuGUI extends JFrame implements ActionListener {
 	
 	public void updateUserName(String user) {
 		userName = user;
+		updateTitle();
 	}
 	
 	@Override
