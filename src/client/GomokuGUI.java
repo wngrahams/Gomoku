@@ -149,12 +149,15 @@ public class GomokuGUI extends JFrame implements ActionListener {
 		}
 	}
 	
-	public void placePieceOnBoard(GomokuMove move) {
-		gamePanel.drawPiece(move);
+	public void newGame() {
+		gameOver = false;
+		gamePanel.resetBoard();
+		if (userColor == Gomoku.BLACK) 
+			connectedClient.updatePlayerTurn();
 	}
 	
-	public void resetBoard() {
-		gamePanel.resetBoard();
+	public void placePieceOnBoard(GomokuMove move) {
+		gamePanel.drawPiece(move);
 	}
 	
 	public void setColor(int color) {

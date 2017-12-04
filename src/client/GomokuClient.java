@@ -170,8 +170,6 @@ public abstract class GomokuClient {
 	
 	protected void updatePlayerTurn() {
 		myTurn = !myTurn;
-//		if (myTurn)
-//			gui.displayMessage("It's your turn");
 	}
 	
 	private class MessageSender implements Runnable {
@@ -247,7 +245,7 @@ public abstract class GomokuClient {
 					else if (GomokuProtocol.isResetMessage(messageReceived)) {
 						gui.displayMessage("Game has been reset");
 						myTurn = (userColor == Gomoku.BLACK) ? true : false;
-						gui.resetBoard();
+						gui.newGame();
 						resetGameState();
 					}
 					else if (GomokuProtocol.isGiveupMessage(messageReceived)) {
