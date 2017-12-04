@@ -4,7 +4,7 @@ public class GomokuMove {
 	
 	private int color;
 	private int row;
-	private int column;
+	private int column; 
 	
 	public GomokuMove(int color, int row, int col) {
 		setColor(color);
