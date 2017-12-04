@@ -118,6 +118,14 @@ public abstract class GomokuClient {
 //		return myTurn;
 //	}
 	
+	private void resetGameState() {
+		for (int i=0; i<15; i++) {
+			for (int j=0; j<15; j++) {
+				gameState[i][j] = Gomoku.EMPTY;
+			}
+		}
+	}
+	
 	protected void sendChatMessage(String message) {
 		String chatMessage = GomokuProtocol.generateChatMessage(user, message);
 		sendMessage(chatMessage);
@@ -237,7 +245,10 @@ public abstract class GomokuClient {
 						}
 					}
 					else if (GomokuProtocol.isResetMessage(messageReceived)) {
+						gui.displayMessage("Game has been reset");
+						myTurn = (userColor == Gomoku.BLACK) ? true : false;
 						gui.resetBoard();
+						resetGameState();
 					}
 					else if (GomokuProtocol.isGiveupMessage(messageReceived)) {
 						if (!gui.isGameOver()) {

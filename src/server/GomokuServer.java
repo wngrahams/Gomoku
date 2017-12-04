@@ -337,16 +337,16 @@ public class GomokuServer {
 				gameState[info[1]][info[2]] = info[0];
 				black.sendMessage(playMessage);
 				white.sendMessage(playMessage);
-//				int[] results = Gomoku.isGameOver(gameState);
-//				if (results[0] == Gomoku.GAME_OVER) {
-//					setWinner(results[1], GAMEOVER_COMPLETE);
-//				}
-				int[]latestMove = new int[3];
-				latestMove = info;
-				int[] results2 = Gomoku.isGameOver(gameState, latestMove);
-				if(results2[0] == Gomoku.GAME_OVER) {
-					setWinner(results2[1], GAMEOVER_COMPLETE);
+				int[] results = Gomoku.isGameOver(gameState);
+				if (results[0] == Gomoku.GAME_OVER) {
+					setWinner(results[1], GAMEOVER_COMPLETE);
 				}
+//				int[]latestMove = new int[3];
+//				latestMove = info;
+//				int[] results2 = Gomoku.isGameOver(gameState, latestMove);
+//				if(results2[0] == Gomoku.GAME_OVER) {
+//					setWinner(results2[1], GAMEOVER_COMPLETE);
+//				}
 			}
 			else {
 				if (info[0] == Gomoku.BLACK)
@@ -372,6 +372,7 @@ public class GomokuServer {
 		public void processResetMessage(String resetMessage) {
 			black.sendMessage(resetMessage);
 			white.sendMessage(resetMessage);
+			
 			for (int i=0; i<15; i++) {
 				for (int j=0; j<15; j++)
 					gameState[i][j] = Gomoku.EMPTY;
