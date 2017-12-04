@@ -34,7 +34,8 @@ public class BoardEvaluator {
 				for (int j=0; j<15; j++) {
 					if (gameState[i][j] == Gomoku.EMPTY) {
 						moveToAdd = new GomokuMove(myColor, i, j);
-						moveToAdd.setPriority(MAX_PRIORITY - (Math.abs(7-i)*2)*(Math.abs(7-j)*2));
+						moveToAdd.setPriority(2*49 - (int)(Math.pow((7-i), 2) + (int)(Math.pow((7-j), 2))));
+						System.out.println("Coords: (" + i + "," + j + "), priority: " + moveToAdd.getPriority());
 						moveQueue.add(moveToAdd);
 					}
 				}
