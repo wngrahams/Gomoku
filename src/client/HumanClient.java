@@ -23,15 +23,20 @@ public class HumanClient extends GomokuClient {
 	}
 
 	public HumanClient() {
-		super(true);
+		super();
 	}
 	
 	public HumanClient(int port) {
-		super("localhost", port, true);
+		super(port);
 	}
 	
 	public HumanClient(String ip, int port) {
-		super(ip, port, true);
+		super(ip, port);
+	}
+	
+	@Override
+	protected void initializeGUI() {
+		gui = new GomokuGUI(this, true);
 	}
 
 	@Override

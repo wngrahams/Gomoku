@@ -1,5 +1,8 @@
 package gomoku;
 
+import java.util.ArrayList;
+import java.util.PriorityQueue;
+
 public class Gomoku {
 	public static final int EMPTY = 0b11111111111111111111111111111111;
 	public static final int WHITE = 0b00;
@@ -17,15 +20,12 @@ public class Gomoku {
 			return "";
 	}
 	
-	public static int[] isGameOver(int[][] gameState, int[] latestMove) {
+	public static int[] isGameOver(int[][] gameState) {
 		if (gameState.length != 15 || gameState[0].length != 15)
 			throw new RuntimeException("Game must be 15x15");
 		
-		int i = latestMove[1];
-		int j = latestMove[2];
-//		
-//		for (int i=0; i<15; i++) {
-//			for (int j=0; j<15; j++) {
+		for (int i=0; i<15; i++) {
+			for (int j=0; j<15; j++) {
 				if (gameState[i][j] != EMPTY) {
 					int potentialWinner = gameState[i][j];
 
@@ -44,25 +44,9 @@ public class Gomoku {
 					// check diagonal down and left
 					if(checkDownAndLeft(gameState, 5, potentialWinner, i, j))
 						return new int[] {GAME_OVER, potentialWinner};
-					
-					// check left
-					if(checkLeft(gameState, 5, potentialWinner, i, j))
-						return new int[] {GAME_OVER, potentialWinner};
-					
-					// check diagonal up and left
-					if(checkUpandLeft(gameState, 5, potentialWinner, i, j))
-						return new int[] {GAME_OVER, potentialWinner};
-					
-					// check vertical up 
-					if(checkUp(gameState, 5, potentialWinner, i, j))
-						return new int[] {GAME_OVER, potentialWinner};
-					
-					// check diagonal up and right
-					if(checkUpandRight(gameState, 5, potentialWinner, i, j))
-						return new int[] {GAME_OVER, potentialWinner};
 				}
-//			}
-//		}
+			}
+		}
 		
 		return new int[] {GAME_NOT_OVER, EMPTY};
 	}
@@ -122,65 +106,143 @@ public class Gomoku {
 		else
 			return false;
 	}
+  
+//	public static ArrayList<GomokuMove> findFours(int[][] gameState, int otherColor) {
+//		ArrayList<GomokuMove> fours = new ArrayList<GomokuMove>();
+//		ArrayList<GomokuMove> potentialFours = new ArrayList<GomokuMove>();
+//		for (int i=0; i<15)
+//		return null;
+//	}
 	
-	private static boolean checkLeft(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
-		amtToWin--;
-		if(amtToWin<= 0)
-			return true;
-		if((startCol+1) < 15) {
-			if(gameState[startCol -1][startRow] == color)
-				return checkLeft(gameState, amtToWin, color, startCol-1, startRow);
-			else
-				return false;
+	public static PriorityQueue<Threat> findThreats(int[][] gameState, int otherColor) {
+		PriorityQueue<Threat> threats = new PriorityQueue<Threat>();
+		for (int i=0; i<15; i++) {
+			for (int j=0; j<15; j++) {
+				if (gameState[i][j] == otherColor) {
+					Threat downThreat = getThreatDown(gameState, otherColor, new GomokuMove(otherColor, i, j));
+					Threat downLeftThreat = getThreatDownLeft(gameState, otherColor, new GomokuMove(otherColor, i, j));
+					Threat downRightThreat = getThreatDownRight(gameState, otherColor, new GomokuMove(otherColor, i, j));
+					Threat rightThreat = getThreatRight(gameState, otherColor, new GomokuMove(otherColor, i, j));
+
+					threats.add(downThreat);
+					threats.add(downLeftThreat);
+					threats.add(downRightThreat);
+					threats.add(rightThreat);
+				}
+			}
 		}
-		else
-			return false;
+		
+		return threats;
 	}
 	
-	private static boolean checkUpandLeft(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
-		amtToWin--;
-		if(amtToWin<=0)
-			return true;
-		if((startCol-1) >= 0 || (startRow+1) <= 15) {
-			if(gameState[startCol-1][startRow] == color)
-				return checkUpandLeft(gameState, amtToWin, color, startCol-1, startRow+1);
-			else
-				return false;
-			
+	private static Threat getThreatDown(int[][] gameState, int color, GomokuMove startingPos) {
+		
+		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
+		int threatSize = getAmtDown(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		
+		down.add(startingPos);
+		for (int i=1; i<threatSize; i++) {
+			down.add(new GomokuMove(color, startingPos.getRow()+i, startingPos.getColumn()));
 		}
-		else
-			return false;
-			
+		
+		Threat threat = new Threat(down, Threat.VERTICAL);
+		return threat;
 	}
 	
-	private static boolean checkUp(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
-		amtToWin--;
-		if(amtToWin<=0)
-			return true;
-		if((startRow+1) < 15) {
-			if(gameState[startCol][startRow+1] == color)
-				return checkUpandLeft(gameState, amtToWin, color, startCol, startRow+1);
+	private static int getAmtDown(int[][] gameState, int color, int startRow, int startCol) {
+		try {
+			if (gameState[startRow + 1][startCol] == color)
+				return 1 + getAmtDown(gameState, color, startRow+1, startCol);
 			else
-				return false;
-			
+				return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
 		}
-		else
-			return false;
 	}
 	
-	private static boolean checkUpandRight(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
-		amtToWin--;
-		if(amtToWin<=0)
-			return true;
-		if((startRow+1) < 15 && (startCol+1) < 15) {
-			if(gameState[startCol+1][startRow+1] == color)
-				return checkUpandLeft(gameState, amtToWin, color, startCol+1, startRow+1);
-			else
-				return false;
-			
+	private static Threat getThreatDownLeft(int[][] gameState, int color, GomokuMove startingPos) {
+		
+		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
+		int threatSize = getAmtDownLeft(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		
+		down.add(startingPos);
+		for (int i=1; i<threatSize; i++) {
+			down.add(new GomokuMove(color, startingPos.getRow()+i, startingPos.getColumn()-i));
 		}
-		else
-			return false;
+		
+		Threat threat = new Threat(down, Threat.UP_RIGHT);
+		return threat;
 	}
 	
+	private static int getAmtDownLeft(int[][] gameState, int color, int startRow, int startCol) {
+		try {
+			if (gameState[startRow + 1][startCol - 1] == color)
+				return 1 + getAmtDownLeft(gameState, color, startRow+1, startCol-1);
+			else
+				return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
+	}
+	
+	private static Threat getThreatDownRight(int[][] gameState, int color, GomokuMove startingPos) {
+		
+		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
+		int threatSize = getAmtDownRight(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		
+		down.add(startingPos);
+		for (int i=1; i<threatSize; i++) {
+			down.add(new GomokuMove(color, startingPos.getRow()+i, startingPos.getColumn()+i));
+		}
+		
+		Threat threat = new Threat(down, Threat.DOWN_RIGHT);
+		return threat;
+	}
+	
+	private static int getAmtDownRight(int[][] gameState, int color, int startRow, int startCol) {
+		try {
+			if (gameState[startRow + 1][startCol + 1] == color)
+				return 1 + getAmtDownRight(gameState, color, startRow+1, startCol+1);
+			else
+				return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
+	}
+	
+	private static Threat getThreatRight(int[][] gameState, int color, GomokuMove startingPos) {
+		
+		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
+		int threatSize = getAmtRight(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		
+		down.add(startingPos);
+		for (int i=1; i<threatSize; i++) {
+			down.add(new GomokuMove(color, startingPos.getRow(), startingPos.getColumn()+i));
+		}
+		
+		Threat threat = new Threat(down, Threat.HORIZONTAL);
+		return threat;
+	}
+	
+	private static int getAmtRight(int[][] gameState, int color, int startRow, int startCol) {
+		try {
+			if (gameState[startRow][startCol + 1] == color)
+				return 1 + getAmtRight(gameState, color, startRow, startCol+1);
+			else
+				return 0;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
+	}
+	
+	public static GomokuMove respondToThreat(int[][] gameState, Threat t, int otherColor) {
+		ArrayList<GomokuMove> costSquares = t.getCostSquares();
+		for (int i=0; i<costSquares.size(); i++) {
+			// TODO: inefficient: why return a cost square if it's already filled
+			if (gameState[costSquares.get(i).getRow()][costSquares.get(i).getColumn()] == EMPTY)
+				return costSquares.get(i);
+		}
+		
+		return null;
+	}
 }
