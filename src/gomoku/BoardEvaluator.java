@@ -1,5 +1,6 @@
 package gomoku;
 
+import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -35,13 +36,17 @@ public class BoardEvaluator {
 					if (gameState[i][j] == Gomoku.EMPTY) {
 						moveToAdd = new GomokuMove(myColor, i, j);
 						moveToAdd.setPriority(2*49 - (int)(Math.pow((7-i), 2) + (int)(Math.pow((7-j), 2))));
-						System.out.println("Coords: (" + i + "," + j + "), priority: " + moveToAdd.getPriority());
 						moveQueue.add(moveToAdd);
 					}
 				}
 			}
 		}
 		else {
+			
+			ArrayList<GomokuMove> winningMoves = lookForWin();
+			for(GomokuMove g : winningMoves)
+				moveQueue.add(g);
+			
 			moveToAdd = playNecessaryDefense();
 			if (moveToAdd != null) {
 				moveQueue.add(moveToAdd);
@@ -66,6 +71,31 @@ public class BoardEvaluator {
 		}
 		
 		return counter;
+	}
+	
+	private ArrayList<GomokuMove> lookForWin() {
+		ArrayList<GomokuMove> winningMoves = new ArrayList<GomokuMove>();
+		
+		int[][] boardCopy = new int[15][15];
+		for (int i=0; i<15; i++)
+			boardCopy[i] = gameState[i].clone();
+		
+		for (int i=0; i<15; i++) {
+			for (int j=0; j<15; j++) {
+				if (gameState[i][j] == Gomoku.EMPTY) {
+					boardCopy[i][i] = myColor;
+					if (Gomoku.isGameOver(boardCopy)[1] == myColor) {
+						GomokuMove moveToAdd = new GomokuMove(myColor, i, j);
+						moveToAdd.setPriority(MAX_PRIORITY);
+						winningMoves.add(moveToAdd);
+					}
+					
+					boardCopy[i][j] = Gomoku.EMPTY;
+				}
+			}
+		}
+		
+		return winningMoves;
 	}
 	
 	private GomokuMove pickFromMiddle() {
