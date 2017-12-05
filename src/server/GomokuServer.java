@@ -328,6 +328,13 @@ public class GomokuServer {
 			return white;
 		}
 		
+		private void declareTie() {
+			black.sendMessage(GomokuProtocol.generateChatMessage("Server", "Game ends in a tie."));
+			black.sendMessage(GomokuProtocol.generateLoseMessage());
+			white.sendMessage(GomokuProtocol.generateChatMessage("Server", "Game ends in a tie."));
+			white.sendMessage(GomokuProtocol.generateLoseMessage());
+		}
+		
 		public void processChatMessage(String chatMessage) {
 			black.sendMessage(chatMessage);
 			white.sendMessage(chatMessage);
@@ -342,7 +349,10 @@ public class GomokuServer {
 				white.sendMessage(playMessage);
 				int[] results = Gomoku.isGameOver(gameState);
 				if (results[0] == Gomoku.GAME_OVER) {
-					setWinner(results[1], GAMEOVER_COMPLETE);
+					if (results[1] != Gomoku.EMPTY)
+						setWinner(results[1], GAMEOVER_COMPLETE);
+					else
+						declareTie();
 				}
 
 				playerTurn = (playerTurn-1)*(-1);
@@ -420,7 +430,7 @@ public class GomokuServer {
 				setResults(black, white, type);
 			}
 			else if (winner == white) {
-				setResults(white, black,type);
+				setResults(white, black, type);
 			}
 		}
 		

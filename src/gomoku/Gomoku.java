@@ -25,6 +25,8 @@ public class Gomoku {
 		if (gameState.length != 15 || gameState[0].length != 15)
 			throw new RuntimeException("Game must be 15x15");
 		
+		boolean fullGame = true;
+		
 		for (int i=0; i<15; i++) {
 			for (int j=0; j<15; j++) {
 				if (gameState[i][j] != EMPTY) {
@@ -46,10 +48,15 @@ public class Gomoku {
 					if(checkDownAndLeft(gameState, 5, potentialWinner, i, j))
 						return new int[] {GAME_OVER, potentialWinner};
 				}
+				else
+					fullGame = false;
 			}
 		}
 		
-		return new int[] {GAME_NOT_OVER, EMPTY};
+		if(fullGame)
+			return new int[] {GAME_OVER, EMPTY};
+		else
+			return new int[] {GAME_NOT_OVER, EMPTY};
 	}
 	
 	private static boolean checkDown(int[][] gameState, int amtToWin, int color, int startCol, int startRow) {
