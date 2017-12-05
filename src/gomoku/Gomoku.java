@@ -2,6 +2,7 @@ package gomoku;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Gomoku {
 	public static final int EMPTY = 0b11111111111111111111111111111111;
@@ -145,7 +146,7 @@ public class Gomoku {
 	private static Threat getThreatDown(int[][] gameState, int color, GomokuMove startingPos) {
 		
 		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
-		int threatSize = getAmtDown(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		int threatSize = getAmtDown(gameState, color, startingPos.getRow(), startingPos.getColumn(), 0) + 1;
 		
 		down.add(startingPos);
 		for (int i=1; i<threatSize; i++) {
@@ -156,12 +157,18 @@ public class Gomoku {
 		return threat;
 	}
 	
-	private static int getAmtDown(int[][] gameState, int color, int startRow, int startCol) {
+	private static int getAmtDown(int[][] gameState, int color, int startRow, int startCol, int blanks) {
 		try {
 			if (gameState[startRow + 1][startCol] == color)
-				return 1 + getAmtDown(gameState, color, startRow+1, startCol);
-			else
-				return 0;
+				return 1 + getAmtDown(gameState, color, startRow+1, startCol, blanks);
+			else {
+				if (blanks < 2) {
+					blanks++;
+					return getAmtDown(gameState, color, startRow+1, startCol, blanks);
+				}
+				else
+					return 0;
+			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			return 0;
 		}
@@ -170,7 +177,7 @@ public class Gomoku {
 	private static Threat getThreatDownLeft(int[][] gameState, int color, GomokuMove startingPos) {
 		
 		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
-		int threatSize = getAmtDownLeft(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		int threatSize = getAmtDownLeft(gameState, color, startingPos.getRow(), startingPos.getColumn(), 0) + 1;
 		
 		down.add(startingPos);
 		for (int i=1; i<threatSize; i++) {
@@ -181,12 +188,18 @@ public class Gomoku {
 		return threat;
 	}
 	
-	private static int getAmtDownLeft(int[][] gameState, int color, int startRow, int startCol) {
+	private static int getAmtDownLeft(int[][] gameState, int color, int startRow, int startCol, int blanks) {
 		try {
 			if (gameState[startRow + 1][startCol - 1] == color)
-				return 1 + getAmtDownLeft(gameState, color, startRow+1, startCol-1);
-			else
-				return 0;
+				return 1 + getAmtDownLeft(gameState, color, startRow+1, startCol-1, blanks);
+			else {
+				if (blanks < 2) {
+					blanks++;
+					return getAmtDownLeft(gameState, color, startRow+1, startCol-1, blanks);
+				}
+				else
+					return 0;
+			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			return 0;
 		}
@@ -195,7 +208,7 @@ public class Gomoku {
 	private static Threat getThreatDownRight(int[][] gameState, int color, GomokuMove startingPos) {
 		
 		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
-		int threatSize = getAmtDownRight(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		int threatSize = getAmtDownRight(gameState, color, startingPos.getRow(), startingPos.getColumn(), 0) + 1;
 		
 		down.add(startingPos);
 		for (int i=1; i<threatSize; i++) {
@@ -206,12 +219,18 @@ public class Gomoku {
 		return threat;
 	}
 	
-	private static int getAmtDownRight(int[][] gameState, int color, int startRow, int startCol) {
+	private static int getAmtDownRight(int[][] gameState, int color, int startRow, int startCol, int blanks) {
 		try {
 			if (gameState[startRow + 1][startCol + 1] == color)
-				return 1 + getAmtDownRight(gameState, color, startRow+1, startCol+1);
-			else
-				return 0;
+				return 1 + getAmtDownRight(gameState, color, startRow+1, startCol+1, blanks);
+			else {
+				if (blanks < 2) {
+					blanks++;
+					return getAmtDownRight(gameState, color, startRow+1, startCol+1, blanks);
+				}
+				else
+					return 0;
+			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			return 0;
 		}
@@ -220,7 +239,7 @@ public class Gomoku {
 	private static Threat getThreatRight(int[][] gameState, int color, GomokuMove startingPos) {
 		
 		ArrayList<GomokuMove> down = new ArrayList<GomokuMove>();
-		int threatSize = getAmtRight(gameState, color, startingPos.getRow(), startingPos.getColumn()) + 1;
+		int threatSize = getAmtRight(gameState, color, startingPos.getRow(), startingPos.getColumn(), 0) + 1;
 		
 		down.add(startingPos);
 		for (int i=1; i<threatSize; i++) {
@@ -231,25 +250,36 @@ public class Gomoku {
 		return threat;
 	}
 	
-	private static int getAmtRight(int[][] gameState, int color, int startRow, int startCol) {
+	private static int getAmtRight(int[][] gameState, int color, int startRow, int startCol, int blanks) {
 		try {
 			if (gameState[startRow][startCol + 1] == color)
-				return 1 + getAmtRight(gameState, color, startRow, startCol+1);
-			else
-				return 0;
+				return 1 + getAmtRight(gameState, color, startRow, startCol+1, blanks);
+			else {
+				if (blanks < 2) {
+					blanks++;
+					return getAmtRight(gameState, color, startRow, startCol+1, blanks);
+				}
+				else
+					return 0;
+			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			return 0;
 		}
 	}
 	
 	public static GomokuMove respondToThreat(int[][] gameState, Threat t, int otherColor) {
-		ArrayList<GomokuMove> costSquares = t.getCostSquares();
+		ArrayList<GomokuMove> costSquares = t.getCostSquares(gameState);
+		ArrayList<GomokuMove> validSquares = new ArrayList<GomokuMove>();
 		for (int i=0; i<costSquares.size(); i++) {
-			// TODO: inefficient: why return a cost square if it's already filled
 			if (gameState[costSquares.get(i).getRow()][costSquares.get(i).getColumn()] == EMPTY)
-				return costSquares.get(i);
+				validSquares.add(costSquares.get(i));
 		}
 		
-		return null;
+		if (validSquares.size() > 0) {
+			int randPos = ThreadLocalRandom.current().nextInt(0, validSquares.size());
+			return validSquares.get(randPos);
+		}
+		else
+			return null;
 	}
 }
