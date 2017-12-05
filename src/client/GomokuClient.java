@@ -170,8 +170,6 @@ public abstract class GomokuClient {
 	
 	protected void updatePlayerTurn() {
 		myTurn = !myTurn;
-//		if (myTurn)
-//			gui.displayMessage("It's your turn");
 	}
 	
 	private class MessageSender implements Runnable {

@@ -294,6 +294,8 @@ public class GomokuServer {
 		
 		private int[][] gameState = new int[15][15];
 		
+		private int playerTurn = Gomoku.BLACK;
+		
 		public GameManager(ClientThread p1, ClientThread p2) {
 			
 			for (int i=0; i<15; i++) {
@@ -333,7 +335,8 @@ public class GomokuServer {
 		
 		public void processPlayMessage(String playMessage) {
 			int[] info = GomokuProtocol.getPlayDetail(playMessage);
-			if (gameState[info[1]][info[2]] == Gomoku.EMPTY) {
+			
+			if (gameState[info[1]][info[2]] == Gomoku.EMPTY && info[0] == playerTurn) {
 				gameState[info[1]][info[2]] = info[0];
 				black.sendMessage(playMessage);
 				white.sendMessage(playMessage);
@@ -341,18 +344,14 @@ public class GomokuServer {
 				if (results[0] == Gomoku.GAME_OVER) {
 					setWinner(results[1], GAMEOVER_COMPLETE);
 				}
-//				int[]latestMove = new int[3];
-//				latestMove = info;
-//				int[] results2 = Gomoku.isGameOver(gameState, latestMove);
-//				if(results2[0] == Gomoku.GAME_OVER) {
-//					setWinner(results2[1], GAMEOVER_COMPLETE);
-//				}
+
+				playerTurn = (playerTurn-1)*(-1);
 			}
 			else {
 				if (info[0] == Gomoku.BLACK)
-					black.sendMessage(GomokuProtocol.generateChatMessage("Server", "That is an invalid move."));
+					black.sendMessage(GomokuProtocol.generateChatMessage("Server", "Invalid move."));
 				else if (info[0] == Gomoku.WHITE)
-					white.sendMessage(GomokuProtocol.generateChatMessage("Server", "That is an invalid move."));
+					white.sendMessage(GomokuProtocol.generateChatMessage("Server", "Invalid move."));
 			}
 		}
 		

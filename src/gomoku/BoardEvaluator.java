@@ -48,7 +48,7 @@ public class BoardEvaluator {
 			for(GomokuMove g : winningMoves)
 				moveQueue.add(g);
 			
-			moveToAdd = playNecessaryDefense();
+			moveToAdd = playDefense();
 			if (moveToAdd != null) {
 				moveQueue.add(moveToAdd);
 			}
@@ -117,8 +117,26 @@ public class BoardEvaluator {
 		}
 	}
 	
-	private GomokuMove playNecessaryDefense() {
+	private GomokuMove playDefense() {
 		PriorityQueue<Threat> threats = Gomoku.findThreats(gameState, otherColor);
+		
+		// first update cost squares and threat priorities
+		Threat threatToTest = threats.poll();
+		ArrayList<Threat> tempThreats = new ArrayList<Threat>();
+		while (threatToTest != null) {
+			int prev = threatToTest.threatSize;
+			threatToTest.getCostSquares(gameState);
+			int post = threatToTest.threatSize;
+			if (post != prev)
+				System.out.println("UPDATE!");
+			tempThreats.add(threatToTest);
+			threatToTest = threats.poll();
+		}
+		
+		// re-add threats to queue:
+		for (Threat t : tempThreats)
+			threats.add(t);
+		
 		Threat highestPriority = threats.poll();
 		if (highestPriority == null) {
 			return null;
