@@ -10,6 +10,10 @@ import javax.swing.JPanel;
 import gomoku.Gomoku;
 import gomoku.GomokuMove;
 
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 @SuppressWarnings("serial")
 public class GameBoardPanel extends JPanel implements MouseListener {
 	

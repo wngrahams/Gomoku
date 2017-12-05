@@ -11,6 +11,10 @@ import gomoku.Gomoku;
 import gomoku.GomokuMove;
 import gomoku.GomokuProtocol;
 
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public abstract class GomokuClient {
 	
 	protected GomokuGUI gui;
@@ -185,7 +189,6 @@ public abstract class GomokuClient {
 			try {					
 				if (messageToSend != null) {
 			        outStream.println(messageToSend);
-			        System.out.println("Client sending: " + messageToSend);
 			    }
 				else
 					throw new IOException();
@@ -205,7 +208,6 @@ public abstract class GomokuClient {
 			while (true) {
 				try {
 					String messageReceived = inStream.readLine();
-					System.out.println("Client received: " + messageReceived);
 					
 					if (messageReceived == null) 
 						throw new IOException();				

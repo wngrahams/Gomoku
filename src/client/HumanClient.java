@@ -2,6 +2,10 @@ package client;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class HumanClient extends GomokuClient {
 	
 	@SuppressWarnings("unused")

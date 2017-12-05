@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class BoardEvaluator {
 	
 	private int[][] gameState = new int[15][15];
@@ -124,11 +128,8 @@ public class BoardEvaluator {
 		Threat threatToTest = threats.poll();
 		ArrayList<Threat> tempThreats = new ArrayList<Threat>();
 		while (threatToTest != null) {
-			int prev = threatToTest.threatSize;
 			threatToTest.getCostSquares(gameState);
-			int post = threatToTest.threatSize;
-			if (post != prev)
-				System.out.println("UPDATE!");
+
 			tempThreats.add(threatToTest);
 			threatToTest = threats.poll();
 		}

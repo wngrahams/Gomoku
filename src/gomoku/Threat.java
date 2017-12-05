@@ -2,6 +2,10 @@ package gomoku;
 
 import java.util.ArrayList;
 
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class Threat implements Comparable<Threat> {
 	
 	public static final int HORIZONTAL = 0b00;

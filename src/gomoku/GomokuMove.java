@@ -1,5 +1,9 @@
 package gomoku;
 
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class GomokuMove implements Comparable<GomokuMove>{
 	
 	private int color;

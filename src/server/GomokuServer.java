@@ -12,6 +12,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import gomoku.Gomoku;
 import gomoku.GomokuProtocol;
 
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class GomokuServer {
 	
 	private int port;
@@ -172,7 +176,6 @@ public class GomokuServer {
 			try {
 				out = new PrintWriter(clientSocket.getOutputStream(), true);
 		        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		        //System.out.println("inside new clientthread(constructor), stream = " + in.readLine());
 			} catch (IOException e) {
 				System.err.println("Error connecting client input/output stream");
 				return;
@@ -320,10 +323,12 @@ public class GomokuServer {
 			white.sendMessage(GomokuProtocol.generateSetWhiteColorMessage());
 		}
 
+		@SuppressWarnings("unused")
 		public ClientThread getBlack() {
 			return black;
 		}
 
+		@SuppressWarnings("unused")
 		public ClientThread getWhite() {
 			return white;
 		}

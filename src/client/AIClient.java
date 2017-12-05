@@ -1,19 +1,20 @@
 package client;
 
-import java.util.ArrayList;
-import java.util.PriorityQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
-import javax.management.RuntimeErrorException;
-
 import gomoku.BoardEvaluator;
-import gomoku.Gomoku;
 import gomoku.GomokuMove;
-import gomoku.Threat;
+
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 
 public class AIClient extends GomokuClient {
 	
+	@SuppressWarnings("unused")
 	private int piecesPlayed = -1;
+	@SuppressWarnings("unused")
 	private int otherColor;
 	
 	@SuppressWarnings("unused")
