@@ -1,6 +1,7 @@
 package gomoku;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -78,12 +79,12 @@ public class BoardEvaluator {
 		
 		int[][] boardCopy = new int[15][15];
 		for (int i=0; i<15; i++)
-			boardCopy[i] = gameState[i].clone();
+			boardCopy[i] = Arrays.copyOf(gameState[i], 15);
 		
 		for (int i=0; i<15; i++) {
 			for (int j=0; j<15; j++) {
 				if (gameState[i][j] == Gomoku.EMPTY) {
-					boardCopy[i][i] = myColor;
+					boardCopy[i][j] = myColor;
 					if (Gomoku.isGameOver(boardCopy)[1] == myColor) {
 						GomokuMove moveToAdd = new GomokuMove(myColor, i, j);
 						moveToAdd.setPriority(MAX_PRIORITY);
