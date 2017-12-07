@@ -70,14 +70,14 @@ public class GomokuServer {
 	}
 	
 	public GomokuServer(int port) {
-		this.port = port;
-		
-		startServer();
+		this(port, false);
 	}
 	
 	public GomokuServer(int port, boolean dbg) {
-		this(port);
-		debug = dbg;
+		debug = dbg;		
+		this.port = port;
+		
+		startServer();
 	}
 	
 	private void addToWaitingQueue(ClientThread c) {
