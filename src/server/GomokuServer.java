@@ -32,6 +32,8 @@ public class GomokuServer {
 	private GameQueue<ClientThread> waitingQueue = new GameQueue<ClientThread>();
 	private ArrayList<GameManager> activeGames = new ArrayList<GameManager>();
 	
+	private boolean debug = false;
+	
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
@@ -42,6 +44,17 @@ public class GomokuServer {
 			try {
 				int portInt = Integer.parseInt(args[0]);
 				gs = new GomokuServer(portInt);
+			} catch (NumberFormatException e) {
+				System.out.println("Usage: java ChatterServer <port_number>");
+				System.out.println("Port number should be an integer less than " + DEFAULT_PORT);
+			}
+		}
+		else if (args.length == 2) {
+			try {
+				
+				boolean dbg = Boolean.parseBoolean(args[1]);
+				int portInt = Integer.parseInt(args[0]);
+				gs = new GomokuServer(portInt, dbg);
 			} catch (NumberFormatException e) {
 				System.out.println("Usage: java ChatterServer <port_number>");
 				System.out.println("Port number should be an integer less than " + DEFAULT_PORT);
@@ -60,6 +73,11 @@ public class GomokuServer {
 		this.port = port;
 		
 		startServer();
+	}
+	
+	public GomokuServer(int port, boolean dbg) {
+		this(port);
+		debug = dbg;
 	}
 	
 	private void addToWaitingQueue(ClientThread c) {
@@ -123,6 +141,7 @@ public class GomokuServer {
 				try {
 					// Create Socket to continually listen for new client connections
 					Socket clientSocket = serverSocket.accept();
+					System.out.println(clientSocket.getInetAddress());
 					
 					if (!keepRunning)
 						break;
@@ -220,7 +239,9 @@ public class GomokuServer {
 			while (clientRun) {
 				try {
 					clientMessage = in.readLine();
-					System.out.println("server received: " + clientMessage);
+					if (debug)
+						System.out.println("server received: " + clientMessage);
+					
 					if (clientMessage == null) 
 						throw new IOException();					
 					else if (GomokuProtocol.isPlayMessage(clientMessage)) {
@@ -252,7 +273,7 @@ public class GomokuServer {
 					
 				} catch (IOException e) {
 					// user has disconnected
-					System.err.println("User has disconnected");
+					System.err.println(clientSocket.getInetAddress() + " has disconnected");
 					if (currentGame != null)
 						currentGame.setLoser(this, GAMEOVER_DISCONNECT);
 					break;
@@ -274,7 +295,9 @@ public class GomokuServer {
 				if (message == null) 
 					throw new IOException();	
 					
-				System.out.println("Server sending: " + message);
+				if (debug)
+					System.out.println("Server sending: " + message);
+				
 				out.println(message);
 				
 			} catch (IOException e) {
