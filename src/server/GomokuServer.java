@@ -141,7 +141,7 @@ public class GomokuServer {
 				try {
 					// Create Socket to continually listen for new client connections
 					Socket clientSocket = serverSocket.accept();
-					System.out.println(clientSocket.getInetAddress());
+					System.out.println(clientSocket.getInetAddress() + " connected");
 					
 					if (!keepRunning)
 						break;
