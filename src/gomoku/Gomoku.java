@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author Graham Stubbs (wgs11@georgetown.edu)
  * @author Cooper Logerfo (cml264@georgetown.edu)
  */
+@SuppressWarnings("unused")
 public class Gomoku {
 	public static final int EMPTY = 0b11111111111111111111111111111111;
 	public static final int WHITE = 0b00;
@@ -272,18 +273,26 @@ public class Gomoku {
 	}
 	
 	public static GomokuMove respondToThreat(int[][] gameState, Threat t, int otherColor) {
+//		ArrayList<GomokuMove> costSquares = t.getCostSquares(gameState);
+//		ArrayList<GomokuMove> validSquares = new ArrayList<GomokuMove>();
+//		for (int i=0; i<costSquares.size(); i++) {
+//			if (gameState[costSquares.get(i).getRow()][costSquares.get(i).getColumn()] == EMPTY)
+//				validSquares.add(costSquares.get(i));
+//		}
+//		
+//		if (validSquares.size() > 0) {
+//			int randPos = ThreadLocalRandom.current().nextInt(0, validSquares.size());
+//			return validSquares.get(randPos);
+//		}
+//		else
+//			return null;
+		
 		ArrayList<GomokuMove> costSquares = t.getCostSquares(gameState);
-		ArrayList<GomokuMove> validSquares = new ArrayList<GomokuMove>();
 		for (int i=0; i<costSquares.size(); i++) {
 			if (gameState[costSquares.get(i).getRow()][costSquares.get(i).getColumn()] == EMPTY)
-				validSquares.add(costSquares.get(i));
+				return costSquares.get(i);
 		}
 		
-		if (validSquares.size() > 0) {
-			int randPos = ThreadLocalRandom.current().nextInt(0, validSquares.size());
-			return validSquares.get(randPos);
-		}
-		else
-			return null;
+		return null;
 	}
 }
